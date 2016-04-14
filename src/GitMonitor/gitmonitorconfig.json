@@ -1,0 +1,47 @@
+﻿{
+  "Defaults": {
+    "DefaultPath": "c:\\gitcode",
+    "DefaultDays": "-3",
+    "DefaultRemote": "origin",
+    "DefaultBranch": "master",
+    "DefaultUserNameExcludeFilter": "ServiceUser"
+  },
+  "MonitoredPathConfig": {
+    "MonitoredPaths": [
+      {
+        "Path": "c:\\gitcode",
+        "Name": "Default",
+        "AllFolders": true,
+        "Repositories": [
+          {
+            "Name": "VSO-Extension-FolderManagement",
+            "CommitUrl": "https://github.com/libgit2/libgit2sharp/commit/",
+            "Remote": "origin",
+            "Branch": "master",
+            "RepositoryFriendlyName": "libgit2sharpFriendly"
+          },
+          {
+            "Name": "ilspy",
+            "CommitUrl": "https://github.com/icsharpcode/ILSpy/commit/",
+            "Remote": "origin",
+            "Branch": "master",
+            "RepositoryFriendlyName": "ilspyFriendly"
+          }
+        ]
+      },
+      {
+        "Path": "c:\\gitcode\\almrangers",
+        "Name": "alm rangers",
+        "AllFolders": true,
+        "Days": "-10"
+      },
+      {
+        "Path": "c:\\gitcode\\githubcool",
+        "Name": "github cool",
+        "AllFolders": true,
+        "Days": "-10"
+      }
+    ]
+
+  }
+}
