@@ -10,9 +10,9 @@ $(window).on('popstate', function () {
     var anchor = location.hash || $("a[data-toggle=tab]").first().attr("href");
     $('a[href=' + anchor + ']').tab('show');
 });
-
+/*
 var timeout = setTimeout("location.reload(true);", 120000);
 function resetTimeout() {
     clearTimeout(timeout);
     timeout = setTimeout("location.reload(true);", 120000);
-}
+}*/

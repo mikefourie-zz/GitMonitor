@@ -13,5 +13,7 @@ namespace GitMonitor.Models
         }
 
         public List<MonitoredPath> MonitoredPaths { get; set; }
+
+        public MonitoredPath ActiveMonitoredPath { get; set; }
     }
 }

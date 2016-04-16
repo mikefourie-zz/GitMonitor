@@ -22,15 +22,11 @@ namespace GitMonitor.Controllers
             this.localMonitoredPathConfig = monitoredPathConfig;
         }
         
-        public IActionResult Index(int days)
+        public IActionResult Index(string name, int days)
         {
-            var results = this.localRepository.GetDefault(this.localMonitoredPathConfig.Value, days);
-            return this.View(results);
-        }
-
-        public IActionResult Groups(int days)
-        {
-            var results = this.localRepository.GetGroups(this.localMonitoredPathConfig.Value, days);
+            this.ViewData["MPName"] = name;
+            this.ViewData["MPDays"] = days;
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, name, days);
             return this.View(results);
         }
 
@@ -38,12 +34,6 @@ namespace GitMonitor.Controllers
         {
             this.localRepository.FetchAll();
             return this.RedirectToAction("Index");
-        }
-
-        public IActionResult FetchGroups()
-        {
-            this.localRepository.FetchAll();
-            return this.RedirectToAction("Groups");
         }
 
         public IActionResult Error()

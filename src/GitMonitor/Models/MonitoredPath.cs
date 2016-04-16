@@ -19,6 +19,8 @@ namespace GitMonitor.Models
 
         public bool AllFolders { get; set; }
 
+        public bool AllowFetch { get; set; }
+
         public int Days { get; set; }
 
         public List<GitRepository> Repositories { get; set; }

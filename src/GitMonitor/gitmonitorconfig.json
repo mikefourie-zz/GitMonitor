@@ -11,35 +11,38 @@
       {
         "Path": "c:\\gitcode",
         "Name": "Default",
+        "AllowFetch": true,
+        "AllFolders": true
+      },
+      {
+        "Path": "c:\\gitcode\\almrangers",
+        "Name": "alm rangers",
         "AllFolders": true,
+        "Days": "-10",
         "Repositories": [
           {
             "Name": "VSO-Extension-FolderManagement",
             "CommitUrl": "https://github.com/libgit2/libgit2sharp/commit/",
             "Remote": "origin",
             "Branch": "master",
-            "RepositoryFriendlyName": "libgit2sharpFriendly"
-          },
-          {
-            "Name": "ilspy",
-            "CommitUrl": "https://github.com/icsharpcode/ILSpy/commit/",
-            "Remote": "origin",
-            "Branch": "master",
-            "RepositoryFriendlyName": "ilspyFriendly"
+            "FriendlyName": "VSO-Ext-Fol"
           }
         ]
-      },
-      {
-        "Path": "c:\\gitcode\\almrangers",
-        "Name": "alm rangers",
-        "AllFolders": true,
-        "Days": "-10"
       },
       {
         "Path": "c:\\gitcode\\githubcool",
         "Name": "github cool",
         "AllFolders": true,
-        "Days": "-10"
+        "Days": "-10",
+        "Repositories": [
+          {
+            "Name": "ilspy",
+            "CommitUrl": "https://github.com/icsharpcode/ILSpy/commit/",
+            "Remote": "origin",
+            "Branch": "master",
+            "FriendlyName": "ilspyFriendly"
+          }
+        ]
       }
     ]
 

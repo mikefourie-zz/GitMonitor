@@ -3,7 +3,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Controllers
 {
-    using System;
     using GitMonitor.Models;
     using GitMonitor.Repositories;
     using Microsoft.AspNet.Mvc;
@@ -15,7 +14,7 @@ namespace GitMonitor.Controllers
     {
         private readonly ILogger<GitController> locallogger;
         private readonly ICommitRepository localRepository;
-        private IOptions<MonitoredPathConfig> localMonitoredPathConfig;
+        private readonly IOptions<MonitoredPathConfig> localMonitoredPathConfig;
 
         public GitController(ICommitRepository repository, ILogger<GitController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
         {
@@ -26,46 +25,56 @@ namespace GitMonitor.Controllers
 
         public JsonResult Get()
         {
-            int days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
-            if (days == 0)
-            {
-                days = -1;
-            }
-
-            if (days > 0)
-            {
-                days = days * -1;
-            }
-
-            var results = this.localRepository.GetDefault(this.localMonitoredPathConfig.Value, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, 0);
             return this.Json(results);
         }
 
         [Route("{days:int}")]
         public JsonResult Get(int days)
         {
-            var results = this.localRepository.GetDefault(this.localMonitoredPathConfig.Value, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, days);
             return this.Json(results);
         }
 
-        [Route("{repoName}")]
-        public JsonResult Get(string repoName)
+        [Route("{pathName}")]
+        public JsonResult Get(string pathName)
         {
-            var results = this.localRepository.Get(repoName, 0);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, string.Empty, string.Empty, 0);
             return this.Json(results);
         }
 
-        [Route("{repoName}/{branchName}")]
-        public JsonResult Get(string repoName, string branchName)
+        [Route("{pathName}/{days:int}")]
+        public JsonResult Get(string pathName, int days)
         {
-            var results = this.localRepository.Get(repoName, branchName, 0);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, string.Empty, string.Empty, days);
             return this.Json(results);
         }
 
-        [Route("{repoName}/{days:int}")]
-        public JsonResult Get(string repoName, int days)
+        [Route("{pathName}/{repoName}")]
+        public JsonResult Get(string pathName, string repoName)
         {
-            var results = this.localRepository.Get(repoName, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, string.Empty, 0);
+            return this.Json(results);
+        }
+
+        [Route("{pathName}/{repoName}/{days:int}")]
+        public JsonResult Get(string pathName, string repoName, int days)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, string.Empty, days);
+            return this.Json(results);
+        }
+
+        [Route("{pathName}/{repoName}/{branchName}")]
+        public JsonResult Get(string pathName, string repoName, string branchName)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, branchName, 0);
+            return this.Json(results);
+        }
+
+        [Route("{pathName}/{repoName}/{branchName}/{days:int}")]
+        public JsonResult Get(string pathName, string repoName, string branchName, int days)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, branchName, days);
             return this.Json(results);
         }
     }
