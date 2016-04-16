@@ -30,10 +30,10 @@ namespace GitMonitor.Controllers
             return this.View(results);
         }
 
-        public IActionResult Fetch()
+        public IActionResult Fetch(string name)
         {
-            this.localRepository.FetchAll();
-            return this.RedirectToAction("Index");
+            this.localRepository.FetchAll(this.localMonitoredPathConfig.Value, name);
+            return this.RedirectToAction("Index", new { name = name });
         }
 
         public IActionResult Error()

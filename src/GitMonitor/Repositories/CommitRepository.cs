@@ -31,7 +31,7 @@ namespace GitMonitor.Repositories
 
                 foreach (MonitoredPath mp in mpc.MonitoredPaths)
                 {
-                    if (mp.Name.ToLower() == name.ToLower())
+                    if (string.Compare(mp.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         mpc.ActiveMonitoredPath = this.GetMonitoredPath(mp, string.Empty, days);
                     }
@@ -74,22 +74,61 @@ namespace GitMonitor.Repositories
             return nmp;
         }
 
-        public void FetchAll()
+        public void FetchAll(MonitoredPathConfig mpc, string pathName)
         {
-            DirectoryInfo dir = new DirectoryInfo(Startup.Configuration["Defaults:DefaultPath"]);
-            foreach (var directory in dir.GetDirectories())
+            if (string.IsNullOrWhiteSpace(pathName))
             {
-                try
+                pathName = "default";
+            }
+
+            foreach (MonitoredPath mp in mpc.MonitoredPaths)
+            {
+                if (mp.Name.ToLower() == pathName.ToLower())
                 {
-                    using (var repo = new Repository(directory.FullName))
+                    if (mp.AllowFetch)
                     {
-                        Remote remote = repo.Network.Remotes["origin"];
-                        repo.Network.Fetch(remote);
+                        try
+                        {
+                            DirectoryInfo[] directoriesToScan;
+                            if (mp.AllFolders)
+                            {
+                                directoriesToScan = new DirectoryInfo(mp.Path).GetDirectories("*", SearchOption.TopDirectoryOnly);
+                            }
+                            else
+                            {
+                                directoriesToScan = new DirectoryInfo[mp.Repositories.Count];
+                                int i = 0;
+                                foreach (var dir in mp.Repositories)
+                                {
+                                    directoriesToScan[i++] = new DirectoryInfo(Path.Combine(mp.Path, dir.Name));
+                                }
+                            }
+
+                            foreach (var dir in directoriesToScan)
+                            {
+                                try
+                                {
+                                    using (var repo = new Repository(dir.FullName))
+                                    {
+                                        Remote remote = repo.Network.Remotes["origin"];
+                                        repo.Network.Fetch(remote);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    this.locallogger.LogError($"Error: {ex.Message}");
+                                    
+                                    // swallow
+                                }                      
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            this.locallogger.LogError($"Error: {ex.Message}");
+                            
+                            // swallow
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    this.locallogger.LogError($"{directory.Name} Error: {ex.Message}");
                 }
             }
         }
@@ -130,11 +169,7 @@ namespace GitMonitor.Repositories
             {
                 try
                 {
-                    GitRepository gitrepo = new GitRepository { Name = dir.Name.Replace(".git", string.Empty) };
-                    string commitUrl = Startup.Configuration[$"Repositories:{gitrepo.Name}"];
-                    string repoFriendlyName = Startup.Configuration[$"Repositories:{gitrepo.Name}FriendlyName"];
-                    repoFriendlyName = string.IsNullOrWhiteSpace(repoFriendlyName) ? dir.Name : repoFriendlyName;
-                    gitrepo.FriendlyName = repoFriendlyName;
+                    GitRepository gitrepo = this.TryGetRepo(monitoredPath, dir.Name);
                     using (var repo = new Repository(dir.FullName))
                     {
                         if (days == 0)
@@ -155,10 +190,13 @@ namespace GitMonitor.Repositories
                                 repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDate)
                                     .OrderByDescending(s => s.Author.When))
                         {
-                            // filter out merge commits
-                            if (com.Parents.Count() > 1)
+                            if (!monitoredPath.IncludeMergeCommits)
                             {
-                                continue;
+                                // filter out merge commits
+                                if (com.Parents.Count() > 1)
+                                {
+                                      continue;
+                                }
                             }
 
                             string[] nameexclusions =
@@ -168,9 +206,9 @@ namespace GitMonitor.Repositories
                                 continue;
                             }
 
-                            string url = string.IsNullOrWhiteSpace(commitUrl)
+                            string url = string.IsNullOrWhiteSpace(gitrepo.CommitUrl)
                                 ? string.Empty
-                                : string.Format($"{commitUrl}{com.Sha}");
+                                : string.Format($"{gitrepo.CommitUrl}{com.Sha}");
                             string repositoryUrl = string.Empty;
                             if (repo.Network.Remotes?["origin"] != null)
                             {
@@ -187,10 +225,11 @@ namespace GitMonitor.Repositories
                                 CommitterWhen = com.Committer.When.UtcDateTime,
                                 Sha = com.Sha,
                                 Message = com.Message,
-                                RepositoryFriendlyName = repoFriendlyName,
+                                RepositoryFriendlyName = gitrepo.FriendlyName,
                                 RepositoryName = dir.Name,
                                 RepositoryUrl = repositoryUrl,
-                                CommitUrl = url
+                                CommitUrl = url,
+                                IsMerge = com.Parents.Count() > 1
                             });
                             commitCount++;
                         }
@@ -215,6 +254,28 @@ namespace GitMonitor.Repositories
             }
 
             return newmonitoredPath;
+        }
+
+        private GitRepository TryGetRepo(MonitoredPath monitoredPath, string directoryName)
+        {
+            GitRepository r = new GitRepository { Name = directoryName, FriendlyName = directoryName };
+            if (monitoredPath.Repositories.Any())
+            {
+                foreach (var repo in monitoredPath.Repositories)
+                {
+                    if (string.Compare(repo.Name, directoryName, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        r = new GitRepository
+                        {
+                            AllowFetch = repo.AllowFetch, CommitUrl = repo.CommitUrl,
+                            FriendlyName = string.IsNullOrWhiteSpace(repo.FriendlyName) ? directoryName : repo.FriendlyName,
+                            Name = directoryName
+                        };
+                    }
+                }
+            }
+
+            return r;
         }
     }
 }

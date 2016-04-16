@@ -29,7 +29,7 @@
                     {
                         if (Model.ActiveMonitoredPath.AllowFetch)
                         {
-                            <a asp-controller="Home" asp-action="Fetch" class="btn btn-success btn-xs">Fetch</a>
+                            <a asp-controller="Home" asp-action="Fetch" asp-route-name="@ViewData["MPName"]" class="btn btn-success btn-xs">Fetch</a>
                         }
                     }                   
                 </div>
@@ -74,7 +74,7 @@
                                             }
                                             else
                                             {
-                                                <td nowrap>@commit.CommitterWhen.ToString("dd MMM") </td>
+                                                <td nowrap>@commit.CommitterWhen.ToString("dd MMM yy") </td>
                                             }
                                             <td nowrap>@commit.Author</td>
                                             @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
@@ -85,7 +85,14 @@
                                             {
                                                 <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
                                             }
-                                            <td>@commit.Message</td>
+                                            @if (@commit.IsMerge)
+                                            {
+                                                <td><p class="text-muted">@commit.Message</p></td>
+                                            }
+                                            else
+                                            {
+                                                <td>@commit.Message</td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>
@@ -111,13 +118,17 @@
                                                 if (@mp.FriendlyName == @commit.RepositoryFriendlyName)
                                                 {
                                                     <tr>
-                                                        @if (@commit.CommitterWhen > DateTime.Now.AddDays(-7))
+                                                        @if (@commit.CommitterWhen.ToString("dd MMM yyy") == DateTime.Now.ToString("dd MMM yyy"))
+                                                        {
+                                                            <td nowrap>@commit.CommitterWhen.ToString("HH:mm") </td>
+                                                        }
+                                                        else if (@commit.CommitterWhen > DateTime.UtcNow.AddDays(-7))
                                                         {
                                                             <td nowrap>@commit.CommitterWhen.ToString("ddd HH:mm") </td>
                                                         }
                                                         else
                                                         {
-                                                            <td nowrap>@commit.CommitterWhen.ToString("dd MMM") </td>
+                                                            <td nowrap>@commit.CommitterWhen.ToString("dd MMM yy") </td>
                                                         }
                                                         <td nowrap>@commit.Author</td>
                                                         @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
@@ -128,8 +139,14 @@
                                                         {
                                                             <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
                                                         }
-                                                        <td>@commit.Message</td>
-                                                    </tr>
+                                                        @if (@commit.IsMerge)
+                                                        {
+                                                            <td><p class="text-muted">@commit.Message</p></td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td>@commit.Message</td>
+                                                        }                                                    </tr>
                                                 }
                                             }
                                         </tbody>

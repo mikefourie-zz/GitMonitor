@@ -9,6 +9,8 @@ namespace GitMonitor.Models
 
         public string FriendlyName { get; set; }
 
+        public string CommitUrl { get; set; }
+
         public bool AllowFetch { get; set; }
 
         public int CommitCount { get; set; }

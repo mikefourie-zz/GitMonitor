@@ -7,7 +7,7 @@ namespace GitMonitor.Repositories
 
     public interface ICommitRepository
     {
-        void FetchAll();
+        void FetchAll(MonitoredPathConfig m, string name);
 
         MonitoredPathConfig Get(MonitoredPathConfig m, string name, int days);
 

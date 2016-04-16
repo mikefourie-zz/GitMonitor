@@ -21,6 +21,8 @@ namespace GitMonitor.Models
 
         public bool AllowFetch { get; set; }
 
+        public bool IncludeMergeCommits { get; set; }
+
         public int Days { get; set; }
 
         public List<GitRepository> Repositories { get; set; }
