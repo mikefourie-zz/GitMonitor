@@ -25,6 +25,8 @@ namespace GitMonitor.Models
 
         public int Days { get; set; }
 
+        public int CommitCount { get; set; }
+
         public List<GitRepository> Repositories { get; set; }
 
         public List<GitCommit> Commits { get; set; }

@@ -20,7 +20,7 @@ namespace GitMonitor.Repositories
             this.locallogger = logger;
         }
 
-        public MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, int days)
+        public MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, int days)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace GitMonitor.Repositories
                 {
                     if (string.Compare(mp.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        mpc.ActiveMonitoredPath = this.GetMonitoredPath(mp, string.Empty, days);
+                        mpc.ActiveMonitoredPath = this.GetMonitoredPath(mp, string.Empty, branchName, days);
                     }
                 }
 
@@ -61,7 +61,7 @@ namespace GitMonitor.Repositories
                 {
                     if (mp.Name.ToLower() == pathName.ToLower())
                     {
-                        nmp = this.GetMonitoredPath(mp, repoName, days);
+                        nmp = this.GetMonitoredPath(mp, repoName, branchName, days);
                     }
                 }              
             }
@@ -133,7 +133,7 @@ namespace GitMonitor.Repositories
             }
         }
 
-        private MonitoredPath GetMonitoredPath(MonitoredPath monitoredPath, string repository, int days)
+        private MonitoredPath GetMonitoredPath(MonitoredPath monitoredPath, string repository, string branchName, int days)
         {
             List<GitCommit> commits = new List<GitCommit>();
             if (days == 0)
@@ -163,8 +163,17 @@ namespace GitMonitor.Repositories
                 }
             }
 
-            MonitoredPath newmonitoredPath = new MonitoredPath();
+            if (days == 0)
+            {
+                days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
+            }
 
+            if (days > 0)
+            {
+                days = days * -1;
+            }
+
+            MonitoredPath newmonitoredPath = new MonitoredPath();
             foreach (var dir in directoriesToScan)
             {
                 try
@@ -172,19 +181,15 @@ namespace GitMonitor.Repositories
                     GitRepository gitrepo = this.TryGetRepo(monitoredPath, dir.Name);
                     using (var repo = new Repository(dir.FullName))
                     {
-                        if (days == 0)
-                        {
-                            days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
-                        }
-
-                        if (days > 0)
-                        {
-                            days = days * -1;
-                        }
-
                         DateTime startDate = DateTime.Now.AddDays(days);
                         int commitCount = 0;
-                        string branch = repo.Info.IsBare ? "master" : "origin/master";
+                        if (string.IsNullOrEmpty(branchName))
+                        {
+                            branchName = "master";
+                        }
+
+                        string branch = repo.Info.IsBare ? branchName : $"origin/{branchName}";
+                        gitrepo.Branch = branch;
                         foreach (
                             LibGit2Sharp.Commit com in
                                 repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDate)
@@ -242,8 +247,9 @@ namespace GitMonitor.Repositories
                     newmonitoredPath.Name = monitoredPath.Name;
                     newmonitoredPath.AllowFetch = monitoredPath.AllowFetch;
                     newmonitoredPath.AllFolders = monitoredPath.AllFolders;
-                    newmonitoredPath.Days = monitoredPath.Days;
+                    newmonitoredPath.Days = days;
                     newmonitoredPath.Path = monitoredPath.Path;
+                    newmonitoredPath.CommitCount = commits.Count;
                     newmonitoredPath.Commits = commits;
                     newmonitoredPath.Commits.Sort((x, y) => -DateTime.Compare(x.CommitterWhen, y.CommitterWhen));
                 }

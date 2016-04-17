@@ -22,11 +22,11 @@ namespace GitMonitor.Controllers
             this.localMonitoredPathConfig = monitoredPathConfig;
         }
         
-        public IActionResult Index(string name, int days)
+        public IActionResult Index(string name, string branchName, int days)
         {
             this.ViewData["MPName"] = name;
             this.ViewData["MPDays"] = days;
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, name, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, name, branchName, days);
             return this.View(results);
         }
 

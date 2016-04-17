@@ -56,8 +56,8 @@
         ]
       },
       {
-        "Path": "c:\\gitcode\\githubcool",
-        "Name": "github cool",
+        "Path": "c:\\gitcode\\githubtrack",
+        "Name": "github track",
         "AllFolders": true,
         "Days": "-10",
         "Repositories": [
@@ -74,8 +74,12 @@
             "Branch": "master"
           }
         ]
+      },
+      {
+        "Path": "c:\\gitcode\\work",
+        "Name": "work",
+        "AllFolders": true
       }
     ]
-
   }
 }
