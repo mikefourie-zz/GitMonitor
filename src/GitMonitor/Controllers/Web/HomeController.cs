@@ -33,7 +33,7 @@ namespace GitMonitor.Controllers
         public IActionResult Fetch(string name, int days)
         {
             this.localRepository.FetchAll(this.localMonitoredPathConfig.Value, name);
-            return this.RedirectToAction("Index", new { name = name , days = days});
+            return this.RedirectToAction("Index", new { name = name, days = days });
         }
 
         public IActionResult Error()
