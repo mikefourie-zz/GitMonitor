@@ -5,9 +5,9 @@ namespace GitMonitor.Controllers
 {
     using GitMonitor.Models;
     using GitMonitor.Repositories;
-    using Microsoft.AspNet.Mvc;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.OptionsModel;
+    using Microsoft.Extensions.Options;
 
     public class HomeController : Controller
     {

@@ -136,10 +136,10 @@ namespace GitMonitor.Repositories
         private MonitoredPath GetMonitoredPath(MonitoredPath monitoredPath, string repository, string branchName, int days)
         {
             List<GitCommit> commits = new List<GitCommit>();
-            if (days == 0)
-            {
-                days = monitoredPath.Days == 0 ? Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]) : monitoredPath.Days;
-            }
+            //if (days == 0)
+            //{
+            //    days = monitoredPath.Days == 0 ? Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]) : monitoredPath.Days;
+            //}
 
             DirectoryInfo[] directoriesToScan;
             if (!string.IsNullOrWhiteSpace(repository))
@@ -163,10 +163,10 @@ namespace GitMonitor.Repositories
                 }
             }
 
-            if (days == 0)
-            {
-                days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
-            }
+            //if (days == 0)
+            //{
+            //    days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
+            //}
 
             if (days > 0)
             {
@@ -204,12 +204,11 @@ namespace GitMonitor.Repositories
                                 }
                             }
 
-                            string[] nameexclusions =
-                                Startup.Configuration["Defaults:DefaultUserNameExcludeFilter"].Split(',');
-                            if (nameexclusions.Any(name => com.Author.Name.Contains(name)))
-                            {
-                                continue;
-                            }
+                            //string[] nameexclusions = Startup.Configuration["Defaults:DefaultUserNameExcludeFilter"].Split(',');
+                            //if (nameexclusions.Any(name => com.Author.Name.Contains(name)))
+                            //{
+                            //    continue;
+                            //}
 
                             string url = string.IsNullOrWhiteSpace(gitrepo.CommitUrl)
                                 ? string.Empty
