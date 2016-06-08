@@ -33,7 +33,19 @@ namespace GitMonitor.Controllers
         public IActionResult Fetch(string name, int days)
         {
             this.localRepository.FetchAll(this.localMonitoredPathConfig.Value, name);
-            return this.RedirectToAction("Index", new { name = name, days = days });
+            return this.RedirectToAction("Index", new { name, days });
+        }
+
+        public IActionResult Search(string monitoredPathName, string sha)
+        {
+            GitSearch search = new GitSearch();
+            if (!string.IsNullOrEmpty(sha))
+            {
+                search.Sha = sha;
+                search.Commits = this.localRepository.SearchForCommit(this.localMonitoredPathConfig.Value, monitoredPathName, sha);
+            }
+
+            return this.View(search);
         }
 
         public IActionResult Error()

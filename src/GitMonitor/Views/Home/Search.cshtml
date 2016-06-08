@@ -1,0 +1,68 @@
+﻿@using System
+@using System.Threading.Tasks
+@using Microsoft.CodeAnalysis.CSharp.Syntax
+@model GitMonitor.Models.GitSearch
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <form asp-controller="Home" asp-action="Search" method="post">
+                <div class="input-group">
+                    <input asp-for="Sha" placeholder="Commit Hash" min="7">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @if (Model.Commits != null && Model.Commits.Any())
+    {
+        <div class="row">
+            <br />
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Commit Found</h3>
+                    </div>
+                    <div class="panel-body col-md-6">
+                        @foreach (var commit in Model.Commits)
+                        {
+                            <h3>Result</h3>
+                            <table class="table table-responsive table-hover">
+                                <tr>
+                                    <td>Repository</td>
+                                    <td><span class="text-muted"><a href="@commit.RepositoryUrl" target="_blank">@commit.RepositoryName</a></span></td>
+                                </tr>
+                                <tr>
+                                    <td>Date</td>
+                                    <td><span class="text-muted">@commit.CommitterWhen</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Author</td>
+                                    <td><span class="text-muted">@commit.Author <a href="mailto:@commit.AuthorEmail?subject=@commit.Sha" target="_blank">@commit.AuthorEmail</a></span></td>
+                                </tr>
+                                <tr>
+                                    <td>Message</td>
+                                    <td><span class="text-muted">@commit.Message</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Sha</td>
+                                    <td>
+                                        <span class="text-muted">
+                                            @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
+                                            {
+                                                @commit.Sha.Substring(0, 7)
+                                            }
+                                            else
+                                            {
+                                                <a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a>
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
