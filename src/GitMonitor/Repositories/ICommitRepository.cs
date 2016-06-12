@@ -1,8 +1,9 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ICommitRepository.cs" company="FreeToDev">Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Repositories
 {
+    using System;
     using System.Collections.Generic;
     using GitMonitor.Models;
 
@@ -12,8 +13,12 @@ namespace GitMonitor.Repositories
 
         List<GitCommit> SearchForCommit(MonitoredPathConfig mpc, string monitoredPathName, string sha);
 
-        MonitoredPathConfig Get(MonitoredPathConfig m, string name, string branchName, int days);
+        MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, int days);
 
-        MonitoredPath Get(MonitoredPathConfig m, string pathName, string repoName, string branchName, int days);
+        MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, DateTime startDateTime, DateTime endDateTime);
+        
+        MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, int days);
+
+        MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, DateTime startDateTime, DateTime endDateTime);
     }
 }

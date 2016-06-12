@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+$(document).ready(function () {
     if (location.hash) {
         $('a[href=' + location.hash + ']').tab('show');
     }

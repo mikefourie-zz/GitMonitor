@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="CommitRepository.cs" company="FreeToDev">Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Repositories
@@ -20,20 +20,20 @@ namespace GitMonitor.Repositories
             this.locallogger = logger;
         }
 
-        public MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, int days)
+        public MonitoredPathConfig Get(MonitoredPathConfig mpc, string monitoredPathName, string branchName, int days)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(name))
+                if (string.IsNullOrWhiteSpace(monitoredPathName))
                 {
-                    name = "default";
+                    monitoredPathName = "default";
                 }
 
                 foreach (MonitoredPath mp in mpc.MonitoredPaths)
                 {
-                    if (string.Compare(mp.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
+                    if (string.Compare(mp.Name, monitoredPathName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        mpc.ActiveMonitoredPath = this.GetMonitoredPath(mp, string.Empty, branchName, days);
+                        mpc.ActiveMonitoredPath = this.GetMonitoredPath(mpc, mp, string.Empty, branchName, days);
                     }
                 }
 
@@ -47,23 +47,79 @@ namespace GitMonitor.Repositories
             return null;
         }
 
-        public MonitoredPath Get(MonitoredPathConfig mpc, string pathName, string repoName, string branchName, int days)
+        public MonitoredPathConfig Get(MonitoredPathConfig mpc, string monitoredPathName, string branchName, DateTime startDateTime, DateTime endDateTime)
         {
-            MonitoredPath nmp = new MonitoredPath();
             try
             {
-                if (string.IsNullOrWhiteSpace(pathName))
+                if (string.IsNullOrWhiteSpace(monitoredPathName))
                 {
-                    pathName = "default";
+                    monitoredPathName = "default";
                 }
 
                 foreach (MonitoredPath mp in mpc.MonitoredPaths)
                 {
-                    if (mp.Name.ToLower() == pathName.ToLower())
+                    if (string.Compare(mp.Name, monitoredPathName, StringComparison.OrdinalIgnoreCase) == 0)
                     {
-                        nmp = this.GetMonitoredPath(mp, repoName, branchName, days);
+                        mpc.ActiveMonitoredPath = this.GetMonitoredPath(mpc, mp, string.Empty, branchName, startDateTime, endDateTime);
+                    }
+                }
+
+                mpc.StartDateTime = startDateTime;
+                mpc.EndDateTime = endDateTime;
+                return mpc;
+            }
+            catch (Exception ex)
+            {
+                this.locallogger.LogError("Bad - ", ex);
+            }
+
+            return null;
+        }
+
+        public MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, int days)
+        {
+            MonitoredPath nmp = new MonitoredPath();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(monitoredPathName))
+                {
+                    monitoredPathName = "default";
+                }
+
+                foreach (MonitoredPath mp in mpc.MonitoredPaths)
+                {
+                    if (mp.Name.ToLower() == monitoredPathName.ToLower())
+                    {
+                        nmp = this.GetMonitoredPath(mpc, mp, repoName, branchName, days);
                     }
                 }              
+            }
+            catch (Exception ex)
+            {
+                this.locallogger.LogError("Bad - ", ex);
+                return null;
+            }
+
+            return nmp;
+        }
+
+        public MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, DateTime startDateTime, DateTime endDateTime)
+        {
+            MonitoredPath nmp = new MonitoredPath();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(monitoredPathName))
+                {
+                    monitoredPathName = "default";
+                }
+
+                foreach (MonitoredPath mp in mpc.MonitoredPaths)
+                {
+                    if (mp.Name.ToLower() == monitoredPathName.ToLower())
+                    {
+                        nmp = this.GetMonitoredPath(mpc, mp, repoName, branchName, startDateTime, endDateTime);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -94,15 +150,14 @@ namespace GitMonitor.Repositories
                         {
                             try
                             {
-                                using (var repo = new Repository(dir.FullName))
+                                using (Repository repo = new Repository(dir.FullName))
                                 {
                                     try
                                     {
-                                        Commit com = repo.Commits.First(c => c.Sha.StartsWith(sha));
+                                        Commit com = repo.Lookup<Commit>(sha);
                                         if (com != null)
                                         {
                                             GitRepository gitrepo = new GitRepository();
-
                                             foreach (var repo1 in mp.Repositories)
                                             {
                                                 if (string.Compare(repo1.Name, dir.Name, StringComparison.OrdinalIgnoreCase) == 0)
@@ -166,16 +221,16 @@ namespace GitMonitor.Repositories
             return commits;
         }
 
-        public void FetchAll(MonitoredPathConfig mpc, string pathName)
+        public void FetchAll(MonitoredPathConfig mpc, string monitoredPathName)
         {
-            if (string.IsNullOrWhiteSpace(pathName))
+            if (string.IsNullOrWhiteSpace(monitoredPathName))
             {
-                pathName = "default";
+                monitoredPathName = "default";
             }
 
             foreach (MonitoredPath mp in mpc.MonitoredPaths)
             {
-                if (mp.Name.ToLower() == pathName.ToLower())
+                if (mp.Name.ToLower() == monitoredPathName.ToLower())
                 {
                     if (mp.AllowFetch)
                     {
@@ -225,14 +280,9 @@ namespace GitMonitor.Repositories
             }
         }
 
-        private MonitoredPath GetMonitoredPath(MonitoredPath monitoredPath, string repository, string branchName, int days)
+        private MonitoredPath GetMonitoredPath(MonitoredPathConfig monitoredPathConfig, MonitoredPath monitoredPath, string repository, string branchName, DateTime startDateTime, DateTime endDateTime)
         {
             List<GitCommit> commits = new List<GitCommit>();
-
-            // if (days == 0)
-            // {
-            //    days = monitoredPath.Days == 0 ? Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]) : monitoredPath.Days;
-            // }
             DirectoryInfo[] directoriesToScan;
             if (!string.IsNullOrWhiteSpace(repository))
             {
@@ -255,10 +305,119 @@ namespace GitMonitor.Repositories
                 }
             }
 
-            // if (days == 0)
-            // {
-            //    days = Convert.ToInt32(Startup.Configuration["Defaults:DefaultDays"]);
-            // }
+            MonitoredPath newmonitoredPath = new MonitoredPath();
+            foreach (var dir in directoriesToScan)
+            {
+                try
+                {
+                    GitRepository gitrepo = this.TryGetRepo(monitoredPath, dir.Name);
+                    using (var repo = new Repository(dir.FullName))
+                    {
+                        int commitCount = 0;
+                        if (string.IsNullOrEmpty(branchName))
+                        {
+                            branchName = "master";
+                        }
+
+                        string branch = repo.Info.IsBare ? branchName : $"origin/{branchName}";
+                        gitrepo.Branch = branch;
+                        foreach (Commit com in repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDateTime && s.Committer.When <= endDateTime).OrderByDescending(s => s.Author.When))
+                        {
+                            if (!monitoredPath.IncludeMergeCommits)
+                            {
+                                // filter out merge commits
+                                if (com.Parents.Count() > 1)
+                                {
+                                      continue;
+                                }
+                            }
+
+                            string[] nameexclusions = monitoredPathConfig.DefaultUserNameExcludeFilter.Split(',');
+                            if (nameexclusions.Any(name => com.Author.Name.Contains(name)))
+                            {
+                                continue;
+                            }
+
+                            string url = string.IsNullOrWhiteSpace(gitrepo.CommitUrl) ? string.Empty : string.Format($"{gitrepo.CommitUrl}{com.Sha}");
+                            string repositoryUrl = string.Empty;
+                            if (repo.Network.Remotes?["origin"] != null)
+                            {
+                                repositoryUrl = repo.Network.Remotes["origin"].Url;
+                            }
+
+                            commits.Add(new GitCommit
+                            {
+                                Author = com.Author.Name,
+                                AuthorEmail = string.IsNullOrWhiteSpace(com.Author.Email) ? string.Empty : com.Author.Email,
+                                AuthorWhen = com.Author.When.UtcDateTime,
+                                Committer = com.Committer.Name,
+                                CommitterEmail = string.IsNullOrWhiteSpace(com.Committer.Email) ? string.Empty : com.Committer.Email,
+                                CommitterWhen = com.Committer.When.UtcDateTime,
+                                Sha = com.Sha,
+                                Message = com.Message,
+                                RepositoryFriendlyName = gitrepo.FriendlyName,
+                                RepositoryName = dir.Name,
+                                RepositoryUrl = repositoryUrl,
+                                CommitUrl = url,
+                                IsMerge = com.Parents.Count() > 1
+                            });
+                            commitCount++;
+                        }
+
+                        gitrepo.CommitCount = commitCount;
+                        newmonitoredPath.Repositories.Add(gitrepo);
+                        newmonitoredPath.AllowFetch = monitoredPath.AllowFetch;
+                    }
+
+                    newmonitoredPath.Name = monitoredPath.Name;
+                    newmonitoredPath.AllowFetch = monitoredPath.AllowFetch;
+                    newmonitoredPath.AllFolders = monitoredPath.AllFolders;
+                    newmonitoredPath.StartDateTime = startDateTime;
+                    newmonitoredPath.EndDateTime = endDateTime;
+                    newmonitoredPath.Path = monitoredPath.Path;
+                    newmonitoredPath.CommitCount = commits.Count;
+                    newmonitoredPath.Commits = commits;
+                    newmonitoredPath.Commits.Sort((x, y) => -DateTime.Compare(x.CommitterWhen, y.CommitterWhen));
+                }
+                catch (Exception ex)
+                {
+                    this.locallogger.LogError("GetMonitoredItem Bad - ", ex);
+                }
+            }
+
+            return newmonitoredPath;
+        }
+
+        private MonitoredPath GetMonitoredPath(MonitoredPathConfig monitoredPathConfig, MonitoredPath monitoredPath, string repository, string branchName, int days)
+        {
+            List<GitCommit> commits = new List<GitCommit>();
+            DirectoryInfo[] directoriesToScan;
+            if (!string.IsNullOrWhiteSpace(repository))
+            {
+                directoriesToScan = new DirectoryInfo(monitoredPath.Path).GetDirectories(repository, SearchOption.TopDirectoryOnly);
+            }
+            else
+            {
+                if (monitoredPath.AllFolders)
+                {
+                    directoriesToScan = new DirectoryInfo(monitoredPath.Path).GetDirectories("*", SearchOption.TopDirectoryOnly);
+                }
+                else
+                {
+                    directoriesToScan = new DirectoryInfo[monitoredPath.Repositories.Count];
+                    int i = 0;
+                    foreach (var dir in monitoredPath.Repositories)
+                    {
+                        directoriesToScan[i++] = new DirectoryInfo(Path.Combine(monitoredPath.Path, dir.Name));
+                    }
+                }
+            }
+
+            if (days == 0)
+            {
+                days = monitoredPath.Days == 0 ? Convert.ToInt32(monitoredPathConfig.DefaultDays) : monitoredPath.Days;
+            }
+
             if (days > 0)
             {
                 days = days * -1;
@@ -281,28 +440,24 @@ namespace GitMonitor.Repositories
 
                         string branch = repo.Info.IsBare ? branchName : $"origin/{branchName}";
                         gitrepo.Branch = branch;
-                        foreach (
-                            LibGit2Sharp.Commit com in
-                                repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDate)
-                                    .OrderByDescending(s => s.Author.When))
+                        foreach (Commit com in repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDate).OrderByDescending(s => s.Author.When))
                         {
                             if (!monitoredPath.IncludeMergeCommits)
                             {
                                 // filter out merge commits
                                 if (com.Parents.Count() > 1)
                                 {
-                                      continue;
+                                    continue;
                                 }
                             }
 
-                            // string[] nameexclusions = Startup.Configuration["Defaults:DefaultUserNameExcludeFilter"].Split(',');
-                            // if (nameexclusions.Any(name => com.Author.Name.Contains(name)))
-                            // {
-                            //    continue;
-                            // }
-                            string url = string.IsNullOrWhiteSpace(gitrepo.CommitUrl)
-                                ? string.Empty
-                                : string.Format($"{gitrepo.CommitUrl}{com.Sha}");
+                            string[] nameexclusions = monitoredPathConfig.DefaultUserNameExcludeFilter.Split(',');
+                            if (nameexclusions.Any(name => com.Author.Name.Contains(name)))
+                            {
+                                continue;
+                            }
+
+                            string url = string.IsNullOrWhiteSpace(gitrepo.CommitUrl) ? string.Empty : string.Format($"{gitrepo.CommitUrl}{com.Sha}");
                             string repositoryUrl = string.Empty;
                             if (repo.Network.Remotes?["origin"] != null)
                             {

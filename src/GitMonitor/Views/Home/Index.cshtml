@@ -1,38 +1,66 @@
-﻿@using System
+@using System
+@using System.Text.Encodings.Web
 @using System.Threading.Tasks
 @using Microsoft.CodeAnalysis.CSharp.Syntax
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @model GitMonitor.Models.MonitoredPathConfig
 <div class="container-fluid">
-    @if (Model?.MonitoredPaths.Count > 1)
-    {
-        <div class="row">
-            <div class="col-md-12">
-                @foreach (var mp in @Model.MonitoredPaths)
-                {
-                    <a asp-controller="Home" asp-action="Index" asp-route-name="@mp.Name" asp-route-days="@ViewData["MPDays"]" class=""><i class="fa fa-folder" aria-hidden="true"></i> @mp.Name&nbsp;&nbsp;&nbsp;</a>
-                }
-            </div>
-        </div>
-    }
     <div class="row">
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-body">
-                    days - <a asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-name="@ViewData["MPName"]"><span class="badge">1</span></a>
-                    <a asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-name="@ViewData["MPName"]"><span class="badge">3</span></a>
-                    <a asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-name="@ViewData["MPName"]"><span class="badge">7</span></a>
-                    <a asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-name="@ViewData["MPName"]"><span class="badge">14</span></a>
-                    <a asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-name="@ViewData["MPName"]"><span class="badge">30</span></a>
-                    <a asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-name="@ViewData["MPName"]"><span class="badge">90</span></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                    @if (Model != null)
-                    {
-                        if (Model.ActiveMonitoredPath.AllowFetch)
+        <div class="container col-md-8">
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @if (Model?.MonitoredPaths.Count > 1)
                         {
-                            <a asp-controller="Home" asp-action="Fetch" asp-route-name="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-success btn-xs">Fetch</a>
+                            @foreach (var mp in @Model.MonitoredPaths)
+                             {
+                                 <a asp-controller="Home" asp-action="Index" asp-route-monitoredPathName="@mp.Name" asp-route-days="@ViewData["MPDays"]" class=""><i class="fa fa-folder" aria-hidden="true"></i> @mp.Name&nbsp;&nbsp;&nbsp;</a>
+                             }
                         }
-                    }
+                    </div>
+                    <div class="panel-body">
+                        <form asp-controller="Home" asp-action="Index" method="post">
+                            days <a asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">1</span></a>
+                            <a asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">3</span></a>
+                            <a asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">7</span></a>
+                            <a asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">14</span></a>
+                            <a asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">30</span></a>
+                            <a asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">90</span></a>
+                            | date range <input asp-for="StartDateTime" type="date" value="@DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd")"/> to <input asp-for="EndDateTime" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")"/> <button type="submit" class="btn btn-primary btn-xs">OK</button>
+                            @if (Model != null)
+                            {
+                                if (Model.ActiveMonitoredPath.AllowFetch)
+                                {
+                                    <a asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-success btn-xs floatright">Fetch</a>
+                                }
+                            }
+                        </form>
+                    </div>
                 </div>
             </div>
+        </div>
+        <div class="container col-md-4">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        Search
+                    </div>
+                    <div class="panel-body">
+                        <form asp-controller="Home" asp-action="Index" method="post">
+                            <div class="input-group">
+                                <input id="sha" name="sha" type="text" class="form-control" placeholder="Commit Hash">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit">&nbsp;<i class="fa fa-search" aria-hidden="true"></i></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
             <div class="bs-component">
                 @if (Model != null)
                 {
@@ -42,7 +70,7 @@
                         {
                             if (repo.CommitCount > 0)
                             {
-                                <li><a href="#@repo.FriendlyName" data-toggle="tab"><small>@repo.FriendlyName - @repo.CommitCount</small></a></li>
+                                <li><a href="#@UrlEncoder.Default.Encode(@repo.FriendlyName)" data-toggle="tab"><small>@repo.FriendlyName - @repo.CommitCount</small></a></li>
                             }
                         }
                     </ul>
@@ -55,6 +83,7 @@
                                     <th>Date</th>
                                     <th>User</th>
                                     <th>Commit</th>
+                                    <th>Info</th>
                                     <th class="col-md-12">Message</th>
                                 </tr>
                                 </thead>
@@ -78,12 +107,13 @@
                                         <td nowrap>@commit.Author</td>
                                         @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
                                         {
-                                            <td>@commit.Sha.Substring(0, 7)</td>
+                                            <td>@commit.Sha.Substring(0, 7) </td>
                                         }
                                         else
                                         {
                                             <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
                                         }
+                                        <td><a asp-controller="Home" asp-action="Index" asp-route-sha="@commit.Sha"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></a></td>
                                         @if (@commit.IsMerge)
                                         {
                                             <td>
@@ -110,6 +140,7 @@
                                             <th>Date</th>
                                             <th>User</th>
                                             <th>Commit</th>
+                                            <th>Info</th>
                                             <th class="col-md-12">Message</th>
                                         </tr>
                                         </thead>
@@ -140,6 +171,7 @@
                                                     {
                                                         <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
                                                     }
+                                                    <td><a asp-controller="Home" asp-action="Index" asp-route-sha="@commit.Sha"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></a></td>
                                                     @if (@commit.IsMerge)
                                                     {
                                                         <td>
@@ -162,5 +194,57 @@
                 }
             </div>
         </div>
+
+
+        @if (Model.Search != null && Model.Search.Commits != null && Model.Search.Commits.Any())
+        {
+                <div class="col-md-4">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Commit Found</h3>
+                        </div>
+                        <div class="panel-body col-md-12">
+                            @foreach (var commit in Model.Search.Commits)
+                            {
+                                <h3>Result</h3>
+                                <table class="table table-responsive table-hover">
+                                    <tr>
+                                        <td>Repository</td>
+                                        <td><span class="text-muted"><a href="@commit.RepositoryUrl" target="_blank">@commit.RepositoryName</a></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Date</td>
+                                        <td><span class="text-muted">@commit.CommitterWhen</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Author</td>
+                                        <td><span class="text-muted">@commit.Author <a href="mailto:@commit.AuthorEmail?subject=@commit.Sha" target="_blank">@commit.AuthorEmail</a></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Message</td>
+                                        <td><span class="text-muted">@commit.Message</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sha</td>
+                                        <td>
+                                            <span class="text-muted">
+                                                @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
+                                                {
+                                                    @commit.Sha
+                                                }
+                                                else
+                                                {
+                                                    <a href="@commit.CommitUrl" target="_blank">@commit.Sha</a>
+                                                }
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                </div>
+        }
+
     </div>
 </div>

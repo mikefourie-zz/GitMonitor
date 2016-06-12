@@ -1,8 +1,9 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MonitoredPath.cs" company="FreeToDev">Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Models
 {
+    using System;
     using System.Collections.Generic;
 
     public class MonitoredPath
@@ -24,6 +25,10 @@ namespace GitMonitor.Models
         public bool IncludeMergeCommits { get; set; }
 
         public int Days { get; set; }
+
+        public DateTime StartDateTime { get; set; }
+
+        public DateTime EndDateTime { get; set; }
 
         public int CommitCount { get; set; }
 

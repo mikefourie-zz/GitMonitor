@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Startup.cs" company="FreeToDev">Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor
@@ -7,8 +7,6 @@ namespace GitMonitor
     using GitMonitor.Repositories;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile("gitmonitorconfig.json");
+                .AddJsonFile("gitmonitorconfig.json", optional: true, reloadOnChange: true);
             if (env.IsDevelopment())
             {
                 // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
@@ -48,7 +46,7 @@ using Microsoft.EntityFrameworkCore;
 
             // Add application services.
             services.AddScoped<ICommitRepository, CommitRepository>();
-            services.Configure<MonitoredPathConfig>(this.Configuration.GetSection("MonitoredPathConfig"));
+            services.Configure<MonitoredPathConfig>(x => this.Configuration.GetSection("MonitoredPathConfig").Bind(x));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

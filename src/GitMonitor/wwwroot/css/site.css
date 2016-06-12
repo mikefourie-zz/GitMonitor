@@ -1,5 +1,7 @@
-﻿/* site.css */
-
+/* site.css */
+/*.navbar {
+    background: #0069AA;
+}*/
 .menu {
   font-size: 12px;
 }
@@ -15,3 +17,7 @@
     .menu li a {
       color: white;
     }
+
+.floatleft { float:left }
+
+.floatright { float:right }

@@ -1,39 +1,83 @@
-﻿{
-  "Defaults": {
+{
+  "MonitoredPathConfig": {
     "DefaultDays": "-3",
     "DefaultRemote": "origin",
     "DefaultBranch": "master",
-    "DefaultUserNameExcludeFilter": "ServiceUser"
-  },
-  "MonitoredPathConfig": {
+    "DefaultUserNameExcludeFilter": "ServiceUser",
     "MonitoredPaths": [
       {
         "Path": "c:\\gitcode",
         "Name": "Default",
         "AllowFetch": true,
+        "AllFolders": true
+      },
+      {
+        "Path": "c:\\gitcode\\almrangers",
+        "Name": "alm rangers",
         "AllFolders": true,
+        "AllowFetch": true,
+        "Days": "-10",
+        "IncludeMergeCommits": true,
         "Repositories": [
           {
-            "Name": "TeamBuild",
-            "CommitUrl": "http://tfsmr:8080/tfs/IEB/MRGIT/_git/TeamBuild/commit/",
+            "Name": "VSO-Extension-FolderManagement",
+            "CommitUrl": "https://github.com/ALM-Rangers/VSO-Extension-FolderManagement/commit/",
+            "Remote": "origin",
+            "Branch": "master",
+            "FriendlyName": "VSO-Ext-Fol"
+          },
+
+          {
+            "Name": "Extracting-effective-permissions-from-TFS",
+            "CommitUrl": "https://github.com/ALM-Rangers/Extracting-effective-permissions-from-TFS/commit/",
+            "Remote": "origin",
+            "Branch": "master"
+          },
+          {
+            "Name": "VSTS-Extension-PrintCards",
+            "CommitUrl": "https://github.com/ALM-Rangers/VSTS-Extension-PrintCards/commit/",
+            "Remote": "origin",
+            "Branch": "master"
+          },
+          {
+            "Name": "Migrate-assets-from-RM-server-to-VSTS",
+            "CommitUrl": "https://github.com/ALM-Rangers/Migrate-assets-from-RM-server-to-VSTS/commit/",
+            "Remote": "origin",
+            "Branch": "master"
+          },
+          {
+            "Name": "Template",
+            "CommitUrl": "https://github.com/ALM-Rangers/Template/commit/",
             "Remote": "origin",
             "Branch": "master"
           }
         ]
       },
       {
-        "Path": "C:\\gitcode\\Work",
-        "Name": "WorkStuff",
-        "AllowFetch": false,
+        "Path": "c:\\gitcode\\githubtrack",
+        "Name": "github track",
         "AllFolders": true,
+        "AllowFetch": true,
+        "Days": "-10",
         "Repositories": [
           {
-            "Name": "EmptyRepo",
-            "CommitUrl": "http://tfsmr:8080/tfs/IEB/MRGIT/_git/EmptyRepo/commit/",
+            "Name": "ilspy",
+            "CommitUrl": "https://github.com/icsharpcode/ILSpy/commit/",
+            "Remote": "origin",
+            "Branch": "master"
+          },
+          {
+            "Name": "libgit2sharp",
+            "CommitUrl": "https://github.com/libgit2/libgit2sharp/commit/",
             "Remote": "origin",
             "Branch": "master"
           }
         ]
+      },
+      {
+        "Path": "c:\\gitcode\\work",
+        "Name": "work",
+        "AllFolders": true
       }
     ]
   }

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="GitSearchController.cs" company="FreeToDev">Copyright Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Controllers
@@ -34,13 +34,13 @@ namespace GitMonitor.Controllers
             return this.Json(search);
         }
 
-        [Route("{pathName}/{sha}")]
-        public JsonResult Get(string pathName, string sha)
+        [Route("{monitoredPathName}/{sha}")]
+        public JsonResult Get(string monitoredPathName, string sha)
         {
             GitSearch search = new GitSearch
             {
                 Sha = sha,
-                Commits = this.localRepository.SearchForCommit(this.localMonitoredPathConfig.Value, pathName, sha)
+                Commits = this.localRepository.SearchForCommit(this.localMonitoredPathConfig.Value, monitoredPathName, sha)
             };
             return this.Json(search);
         }

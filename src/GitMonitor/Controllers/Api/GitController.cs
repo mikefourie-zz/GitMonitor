@@ -1,8 +1,9 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="GitController.cs" company="FreeToDev">Copyright Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Controllers
 {
+    using System;
     using GitMonitor.Models;
     using GitMonitor.Repositories;
     using Microsoft.AspNetCore.Mvc;
@@ -30,24 +31,38 @@ namespace GitMonitor.Controllers
             return this.Json(results);
         }
 
-        [Route("{pathName}/{days:int?}")]
-        public JsonResult Get(string pathName, int days)
+        [Route("{monitoredPathName}/{days:int?}")]
+        public JsonResult Get(string monitoredPathName, int days)
         {
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, string.Empty, string.Empty, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, string.Empty, string.Empty, days);
             return this.Json(results);
         }
 
-        [Route("{pathName}/{repoName}/{days:int?}")]
-        public JsonResult Get(string pathName, string repoName, int days)
+        [Route("{monitoredPathName}/{repoName}/{days:int?}")]
+        public JsonResult Get(string monitoredPathName, string repoName, int days)
         {
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, string.Empty, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, string.Empty, days);
             return this.Json(results);
         }
 
-        [Route("{pathName}")]
-        public JsonResult Get(string pathName, string repoName, string branchName, int days)
+        [Route("{monitoredPathName}")]
+        public JsonResult Get(string monitoredPathName, string repoName, string branchName, int days)
         {
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, pathName, repoName, branchName, days);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, branchName, days);
+            return this.Json(results);
+        }
+
+        [Route("{startDateTime:DateTime}")]
+        public JsonResult Get(DateTime startDateTime)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, startDateTime, DateTime.UtcNow);
+            return this.Json(results);
+        }
+
+        [Route("{startDateTime:DateTime}/{endDateTime:DateTime}")]
+        public JsonResult Get(DateTime startDateTime, DateTime endDateTime)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, startDateTime, endDateTime);
             return this.Json(results);
         }
     }
