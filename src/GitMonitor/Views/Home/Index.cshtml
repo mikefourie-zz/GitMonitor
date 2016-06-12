@@ -40,23 +40,14 @@
             </div>
         </div>
         <div class="container col-md-4">
-            <div class="panel-group">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        Search
-                    </div>
-                    <div class="panel-body">
-                        <form asp-controller="Home" asp-action="Index" method="post">
-                            <div class="input-group">
-                                <input id="sha" name="sha" type="text" class="form-control" placeholder="Commit Hash">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" type="submit">&nbsp;<i class="fa fa-search" aria-hidden="true"></i></button>
-                                </span>
-                            </div>
-                        </form>
-                    </div>
+            <form asp-controller="Home" asp-action="Index" method="post">
+                <div class="input-group">
+                    <input id="sha" name="sha" type="text" class="form-control" placeholder="Search Commit Hash">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">&nbsp;<i class="fa fa-search" aria-hidden="true"></i></button>
+                    </span>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     <div class="row">
