@@ -5,10 +5,7 @@ The introductory blog post can be found here - https://mikefourie.wordpress.com/
 
 
 # Web Api
-
-## Query Commits
-
-**By Date Range**
+**Query commits by date range**
 ----
   Returns commits between the provided dates (inclusive).
 
@@ -32,4 +29,26 @@ The introductory blog post can be found here - https://mikefourie.wordpress.com/
 * Commits between 1 Jan 2016 and 30 Jan 2016 today: ```/api/commits/1 Jan 2016/30 Jan 2016```
    
 
-## Search
+**Find a commit**
+----
+  Returns commits between the provided dates (inclusive).
+
+* **URL**
+
+  /api/search/[path]/[commit]
+
+* **Method:**
+
+  `GET`
+  
+*  **URL Params**
+
+   **Required:**
+ 
+   `commit=[sha1]`
+
+* **Sample Calls**
+
+* Find commit in default path: ```/api/search/a3er4w```
+* Find commit in work path: ```/api/search/work/a3er4w```
+* Find commit in all paths: ```/api/search/*/a3er4w```
