@@ -39,11 +39,11 @@ namespace GitMonitor.Export
                 string urltopass;
                 if (string.IsNullOrEmpty(Arguments.RepositoryName))
                 {
-                    urltopass = $"/api/commits/{Arguments.Days}";
+                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}";
                 }
                 else
                 {
-                    urltopass = @"/api/commits/default?repoName=" + Arguments.RepositoryName + "&branchName=" + Arguments.BranchName + "&days=" + Arguments.Days;
+                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?repoName=" + Arguments.RepositoryName + "&branchName=" + Arguments.BranchName + "&days=" + Arguments.Days;
                 }
 
                 var response = client.GetAsync(urltopass).Result;

@@ -19,7 +19,10 @@ namespace GitMonitor.Export
         [Option('b', "branchname", HelpText = "The name of the branch to retrieve", Required = false, DefaultValue = "master")]
         public string BranchName { get; set; }
         
-        [Option('f', "filename", HelpText = "The name of the file to save results to", Required = false, DefaultValue = "master")]
+        [Option('f', "filename", HelpText = "The name of the file to save results to", Required = false)]
         public string FileName { get; set; }
+
+        [Option('m', "monitoredpathname", HelpText = "The name of the monitored path to query", Required = false, DefaultValue = "default")]
+        public string MonitoredPathName { get; set; }
     }
 }
