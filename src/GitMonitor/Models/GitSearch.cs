@@ -10,5 +10,7 @@ namespace GitMonitor.Models
         public string Sha { get; set; }
 
         public List<GitCommit> Commits { get; set; }
+
+        public List<string> Branches { get; set; }
     }
 }

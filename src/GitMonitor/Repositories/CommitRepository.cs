@@ -130,7 +130,69 @@ namespace GitMonitor.Repositories
             return nmp;
         }
 
-        public List<GitCommit> SearchForCommit(MonitoredPathConfig mpc, string monitoredPathName, string sha)
+        public List<string> SearchBranchesForCommit(MonitoredPathConfig monitoredPathConfig, string repositoryName, string sha)
+        {
+            List<string> commits = new List<string>();
+
+            try
+            {
+                foreach (MonitoredPath mp in monitoredPathConfig.MonitoredPaths)
+                {
+                    if (string.Compare(mp.Name, repositoryName, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        Repository r = new Repository($"{mp.Path}\\{repositoryName}");
+                        IEnumerable<Branch> branches = ListBranchesContaininingCommit(r, sha);
+
+
+
+
+                        break;
+                    }
+                }
+
+                return commits;
+            }
+            catch (Exception ex)
+            {
+                this.locallogger.LogError("Bad - ", ex);
+            }
+
+            return commits;
+        }
+
+        private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string sha)
+        {
+            bool directBranchHasBeenFound = false;
+            foreach (var branch in repo.Branches)
+            {
+                if (branch.Tip.Sha != sha)
+                {
+                    continue;
+                }
+
+                directBranchHasBeenFound = true;
+                yield return branch;
+            }
+
+            if (directBranchHasBeenFound)
+            {
+                yield break;
+            }
+
+            foreach (var branch in repo.Branches)
+            {
+                var commits = repo.Commits.QueryBy(new CommitFilter {  }).Where(c => c.Sha == sha);
+
+                if (!commits.Any())
+                {
+                    continue;
+                }
+
+                yield return branch;
+            }
+        }
+
+        public List<GitCommit> SearchForCommit(MonitoredPathConfig monitoredPathConfig, string monitoredPathName, string sha)
         {
             List<GitCommit> commits = new List<GitCommit>();
 
@@ -141,7 +203,7 @@ namespace GitMonitor.Repositories
                     monitoredPathName = "default";
                 }
 
-                foreach (MonitoredPath mp in mpc.MonitoredPaths)
+                foreach (MonitoredPath mp in monitoredPathConfig.MonitoredPaths)
                 {
                     if (string.Compare(mp.Name, monitoredPathName, StringComparison.OrdinalIgnoreCase) == 0 || monitoredPathName == "*")
                     {

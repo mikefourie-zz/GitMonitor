@@ -11,7 +11,9 @@ namespace GitMonitor.Repositories
     {
         void FetchAll(MonitoredPathConfig m, string name);
 
-        List<GitCommit> SearchForCommit(MonitoredPathConfig mpc, string monitoredPathName, string sha);
+        List<GitCommit> SearchForCommit(MonitoredPathConfig mpc, string repositoryName, string sha);
+        
+        List<string> SearchBranchesForCommit(MonitoredPathConfig mpc, string repositoryName, string sha);
 
         MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, int days);
 

@@ -44,5 +44,16 @@ namespace GitMonitor.Controllers
             };
             return this.Json(search);
         }
+
+        [Route("branches/{repositoryName}/{sha}")]
+        public JsonResult GetBranches(string repositoryName, string sha)
+        {
+            GitSearch search = new GitSearch
+            {
+                Sha = sha,
+                Branches = this.localRepository.SearchBranchesForCommit(this.localMonitoredPathConfig.Value, repositoryName, sha)
+            };
+            return this.Json(search);
+        }
     }
 }
