@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "GitMonitor", "src\GitMonitor\GitMonitor.xproj", "{6C624E59-004D-47A3-90B5-05A5AB4D912D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitMonitor", "src\GitMonitor\GitMonitor.csproj", "{6C624E59-004D-47A3-90B5-05A5AB4D912D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Export", "Export\Export.csproj", "{B22F713E-C293-41CC-AD95-280F178D1F63}"
 EndProject

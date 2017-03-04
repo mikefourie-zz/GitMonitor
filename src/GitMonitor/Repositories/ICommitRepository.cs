@@ -13,7 +13,7 @@ namespace GitMonitor.Repositories
 
         List<GitCommit> SearchForCommit(MonitoredPathConfig mpc, string repositoryName, string sha);
         
-        List<string> SearchBranchesForCommit(MonitoredPathConfig mpc, string repositoryName, string sha);
+        List<string> SearchBranchesForCommit(MonitoredPathConfig mpc, string repositoryName, string sha, string filter);
 
         MonitoredPathConfig Get(MonitoredPathConfig mpc, string name, string branchName, int days);
 

@@ -130,65 +130,82 @@ namespace GitMonitor.Repositories
             return nmp;
         }
 
-        public List<string> SearchBranchesForCommit(MonitoredPathConfig monitoredPathConfig, string repositoryName, string sha)
+        public List<string> SearchBranchesForCommit(MonitoredPathConfig monitoredPathConfig, string repositoryName, string sha, string filter)
         {
-            List<string> commits = new List<string>();
-
+            List<string> branches = new List<string>();
+            bool found = false;
             try
             {
                 foreach (MonitoredPath mp in monitoredPathConfig.MonitoredPaths)
                 {
-                    if (string.Compare(mp.Name, repositoryName, StringComparison.OrdinalIgnoreCase) == 0)
+                    DirectoryInfo[] directoriesToScan = new DirectoryInfo(mp.Path).GetDirectories("*", SearchOption.TopDirectoryOnly);
+                    foreach (DirectoryInfo dir in directoriesToScan)
                     {
-                        Repository r = new Repository($"{mp.Path}\\{repositoryName}");
-                        IEnumerable<Branch> branches = ListBranchesContaininingCommit(r, sha);
+                        if (string.Compare(dir.Name, repositoryName, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            Repository r = new Repository($"{mp.Path}\\{repositoryName}");
+                            IEnumerable<Branch> b = ListBranchesContaininingCommit(r, sha, filter);
 
+                            foreach (Branch i in b)
+                            {
+                                branches.Add(i.FriendlyName);
+                            }
 
+                            found = true;
+                            break;
+                        }
 
-
-                        break;
+                        if (found)
+                        {
+                            break;
+                        }
                     }
                 }
-
-                return commits;
             }
             catch (Exception ex)
             {
                 this.locallogger.LogError("Bad - ", ex);
             }
 
-            return commits;
+            return branches;
         }
 
-        private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string sha)
+        private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string commitSha, string filter)
         {
-            bool directBranchHasBeenFound = false;
-            foreach (var branch in repo.Branches)
+            if (string.IsNullOrEmpty(filter))
             {
-                if (branch.Tip.Sha != sha)
+                foreach (var branch in repo.Branches)
                 {
-                    continue;
+                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
+
+                    if (!commits.Any())
+                    {
+                        continue;
+                    }
+
+                    yield return branch;
                 }
-
-                directBranchHasBeenFound = true;
-                yield return branch;
             }
-
-            if (directBranchHasBeenFound)
+            else
             {
-                yield break;
-            }
-
-            foreach (var branch in repo.Branches)
-            {
-                var commits = repo.Commits.QueryBy(new CommitFilter {  }).Where(c => c.Sha == sha);
-
-                if (!commits.Any())
+                foreach (var branch in repo.Branches.Where(n => n.FriendlyName.Contains(filter)))
                 {
-                    continue;
-                }
+                    foreach(Commit m in branch.Commits)
+                    {
+                        if (m.Sha == commitSha)
+                        {
+                            int j = 2;
+                        }
+                    }
+                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
 
-                yield return branch;
+                    if (!commits.Any())
+                    {
+                        continue;
+                    }
+
+                    yield return branch;
+                }
             }
         }
 
@@ -319,7 +336,7 @@ namespace GitMonitor.Repositories
                                 {
                                     using (var repo = new Repository(dir.FullName))
                                     {
-                                        Remote remote = repo.Network.Remotes["origin"];
+                                        Remote remote = repo.Network.Remotes["origin"];                                        
                                         repo.Network.Fetch(remote);
                                     }
                                 }
