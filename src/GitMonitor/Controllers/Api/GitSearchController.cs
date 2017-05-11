@@ -12,11 +12,11 @@ namespace GitMonitor.Controllers
     [Route("api/search")]
     public class GitSearchController : Controller
     {
-        private readonly ILogger<GitController> locallogger;
+        private readonly ILogger<GitSearchController> locallogger;
         private readonly ICommitRepository localRepository;
         private readonly IOptions<MonitoredPathConfig> localMonitoredPathConfig;
 
-        public GitSearchController(ICommitRepository repository, ILogger<GitController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
+        public GitSearchController(ICommitRepository repository, ILogger<GitSearchController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
         {
             this.localRepository = repository;
             this.locallogger = logger;

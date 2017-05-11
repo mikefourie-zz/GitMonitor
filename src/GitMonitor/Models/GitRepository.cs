@@ -15,6 +15,10 @@ namespace GitMonitor.Models
 
         public int CommitCount { get; set; }
 
+        public GitCommit LastCommit { get; set; }
+
+        public int BranchCount { get; set; }
+
         public string Branch { get; set; }
     }
 }

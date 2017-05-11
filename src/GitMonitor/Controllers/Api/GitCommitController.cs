@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="GitController.cs" company="FreeToDev">Copyright Mike Fourie</copyright>
+// <copyright file="GitCommitController.cs" company="FreeToDev">Copyright Mike Fourie</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Controllers
 {
@@ -11,13 +11,13 @@ namespace GitMonitor.Controllers
     using Microsoft.Extensions.Options;
 
     [Route("api/commits")]
-    public class GitController : Controller
+    public class GitCommitController : Controller
     {
-        private readonly ILogger<GitController> locallogger;
+        private readonly ILogger<GitCommitController> locallogger;
         private readonly ICommitRepository localRepository;
         private readonly IOptions<MonitoredPathConfig> localMonitoredPathConfig;
 
-        public GitController(ICommitRepository repository, ILogger<GitController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
+        public GitCommitController(ICommitRepository repository, ILogger<GitCommitController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
         {
             this.localRepository = repository;
             this.locallogger = logger;

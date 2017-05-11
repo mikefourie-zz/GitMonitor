@@ -9,7 +9,6 @@ namespace GitMonitor
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Serialization;
 
@@ -22,11 +21,6 @@ namespace GitMonitor
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("gitmonitorconfig.json", optional: true, reloadOnChange: true);
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets();
-            }
 
             builder.AddEnvironmentVariables();
             this.Configuration = builder.Build();
@@ -46,6 +40,7 @@ namespace GitMonitor
 
             // Add application services.
             services.AddScoped<ICommitRepository, CommitRepository>();
+            services.AddScoped<IRepoRepository, RepoRepository>();
             services.Configure<MonitoredPathConfig>(x => this.Configuration.GetSection("MonitoredPathConfig").Bind(x));
         }
 

@@ -12,17 +12,16 @@ namespace GitMonitor.Controllers
     [Route("api/branches")]
     public class GitBranchSearchController : Controller
     {
-        private readonly ILogger<GitController> locallogger;
+        private readonly ILogger<GitBranchSearchController> locallogger;
         private readonly ICommitRepository localRepository;
         private readonly IOptions<MonitoredPathConfig> localMonitoredPathConfig;
 
-        public GitBranchSearchController(ICommitRepository repository, ILogger<GitController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
+        public GitBranchSearchController(ICommitRepository repository, ILogger<GitBranchSearchController> logger, IOptions<MonitoredPathConfig> monitoredPathConfig)
         {
             this.localRepository = repository;
             this.locallogger = logger;
             this.localMonitoredPathConfig = monitoredPathConfig;
         }
-        
 
         [Route("{repositoryName}/{sha}")]
         public JsonResult GetBranches(string repositoryName, string sha)

@@ -144,7 +144,7 @@ namespace GitMonitor.Repositories
                         if (string.Compare(dir.Name, repositoryName, StringComparison.OrdinalIgnoreCase) == 0)
                         {
                             Repository r = new Repository($"{mp.Path}\\{repositoryName}");
-                            IEnumerable<Branch> b = ListBranchesContaininingCommit(r, sha, filter);
+                            IEnumerable<Branch> b = this.ListBranchesContaininingCommit(r, sha, filter);
 
                             foreach (Branch i in b)
                             {
@@ -168,45 +168,6 @@ namespace GitMonitor.Repositories
             }
 
             return branches;
-        }
-
-        private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string commitSha, string filter)
-        {
-            if (string.IsNullOrEmpty(filter))
-            {
-                foreach (var branch in repo.Branches)
-                {
-                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
-
-                    if (!commits.Any())
-                    {
-                        continue;
-                    }
-
-                    yield return branch;
-                }
-            }
-            else
-            {
-                foreach (var branch in repo.Branches.Where(n => n.FriendlyName.Contains(filter)))
-                {
-                    foreach(Commit m in branch.Commits)
-                    {
-                        if (m.Sha == commitSha)
-                        {
-                            int j = 2;
-                        }
-                    }
-                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
-
-                    if (!commits.Any())
-                    {
-                        continue;
-                    }
-
-                    yield return branch;
-                }
-            }
         }
 
         public List<GitCommit> SearchForCommit(MonitoredPathConfig monitoredPathConfig, string monitoredPathName, string sha)
@@ -359,6 +320,38 @@ namespace GitMonitor.Repositories
             }
         }
 
+        private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string commitSha, string filter)
+        {
+            if (string.IsNullOrEmpty(filter))
+            {
+                foreach (var branch in repo.Branches)
+                {
+                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
+
+                    if (!commits.Any())
+                    {
+                        continue;
+                    }
+
+                    yield return branch;
+                }
+            }
+            else
+            {
+                foreach (var branch in repo.Branches.Where(n => n.FriendlyName.Contains(filter)))
+                {
+                    var commits = branch.Commits.Where(c => c.Sha == commitSha);
+
+                    if (!commits.Any())
+                    {
+                        continue;
+                    }
+
+                    yield return branch;
+                }
+            }
+        }
+
         private MonitoredPath GetMonitoredPath(MonitoredPathConfig monitoredPathConfig, MonitoredPath monitoredPath, string repository, string branchName, DateTime startDateTime, DateTime endDateTime)
         {
             List<GitCommit> commits = new List<GitCommit>();
@@ -400,6 +393,7 @@ namespace GitMonitor.Repositories
 
                         string branch = repo.Info.IsBare ? branchName : $"origin/{branchName}";
                         gitrepo.Branch = branch;
+
                         foreach (Commit com in repo.Branches[branch].Commits.Where(s => s.Committer.When >= startDateTime && s.Committer.When <= endDateTime).OrderByDescending(s => s.Author.When))
                         {
                             if (!monitoredPath.IncludeMergeCommits)
