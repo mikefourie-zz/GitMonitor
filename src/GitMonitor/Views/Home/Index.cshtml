@@ -17,25 +17,43 @@
                                  <a asp-controller="Home" asp-action="Index" asp-route-monitoredPathName="@mp.Name" asp-route-days="@ViewData["MPDays"]" class=""><i class="fa fa-folder" aria-hidden="true"></i> @mp.Name&nbsp;&nbsp;&nbsp;</a>
                              }
                         }
-                    </div>
-                    <div class="panel-body">
-                        <form asp-controller="Home" asp-action="Index" method="post">
-                            days <a asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">1</span></a>
-                            <a asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">3</span></a>
-                            <a asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">7</span></a>
-                            <a asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">14</span></a>
-                            <a asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">30</span></a>
-                            <a asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">90</span></a>
-                            | date range <input asp-for="StartDateTime" type="date" value="@DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd")"/> to <input asp-for="EndDateTime" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")"/> <button type="submit" class="btn btn-primary btn-xs">OK</button>
-                            @if (Model != null)
+                        @if (Model != null)
+                        {
+                            if (Model.ActiveMonitoredPath.AllowFetch)
                             {
-                                if (Model.ActiveMonitoredPath.AllowFetch)
-                                {
-                                    <a asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-success btn-xs floatright">Fetch</a>
-                                }
+                                <a asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-success btn-xs floatright">Fetch</a>
                             }
-                        </form>
+                        }
                     </div>
+                    @if (@ViewData["StartDateTime"] != null && !string.IsNullOrEmpty(@ViewData["StartDateTime"].ToString()))
+                    {
+                        <div class="panel-body">
+                            <form asp-controller="Home" asp-action="Index" method="post">
+                                days <a asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">1</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">3</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">7</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">14</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">30</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">90</span></a>
+                                | date range <input asp-for="StartDateTime" type="date" value="@ViewData["StartDateTime"]" /> to <input asp-for="EndDateTime" type="date" value="@ViewData["EndDateTime"]" /> <button type="submit" class="btn btn-primary btn-xs">OK</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="panel-body">
+                            <form asp-controller="Home" asp-action="Index" method="post">
+                                days <a asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">1</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">3</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">7</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">14</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">30</span></a>
+                                <a asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData["MPName"]"><span class="badge">90</span></a>
+                                | date range <input asp-for="StartDateTime" type="date" value="@DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd")" /> to <input asp-for="EndDateTime" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" /> <button type="submit" class="btn btn-primary btn-xs">OK</button>
+                            </form>
+                                            </div>
+                    }
+
                 </div>
             </div>
         </div>

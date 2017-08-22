@@ -49,6 +49,9 @@ namespace GitMonitor.Controllers
             }
             else
             {
+                this.ViewData["StartDateTime"] = startDateTime.ToString("yyyy-MM-dd");
+                this.ViewData["EndDateTime"] = endDateTime.ToString("yyyy-MM-dd");
+
                 var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, branchName, startDateTime, endDateTime);
                 return this.View(results);
             }
