@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommitRepository.cs" company="FreeToDev">Mike Fourie</copyright>
+// <copyright file="CommitRepository.cs">(c) 2017 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Repositories
 {
@@ -297,8 +297,12 @@ namespace GitMonitor.Repositories
                                 {
                                     using (var repo = new Repository(dir.FullName))
                                     {
-                                        Remote remote = repo.Network.Remotes["origin"];                                        
-                                        repo.Network.Fetch(remote);
+                                        string logMessage = string.Empty;
+                                        Remote remote = repo.Network.Remotes["origin"];
+                                        IEnumerable<string> refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+                                        Commands.Fetch(repo, remote.Name, refSpecs, null, logMessage);
+
+                                        this.locallogger.LogInformation($"{logMessage}");
                                     }
                                 }
                                 catch (Exception ex)
