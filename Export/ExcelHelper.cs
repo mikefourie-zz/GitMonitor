@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ExcelHelper.cs" company="FreeToDev">Mike Fourie</copyright>
+// <copyright file="ExcelHelper.cs">(c) 2017 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Export
 {
@@ -16,12 +16,12 @@ namespace GitMonitor.Export
         {
             excelApp = new Application { DisplayAlerts = false };
             workbook = excelApp.Workbooks.Add();
-            worksheet = workbook.Sheets.Add();
+            worksheet = (Worksheet)workbook.Sheets.Add();
         }
 
         public void AddWorksheet(string name)
         {
-            worksheet = workbook.Sheets.Add();
+            worksheet = (Worksheet)workbook.Sheets.Add();
             worksheet.Name = name;
         }
 
