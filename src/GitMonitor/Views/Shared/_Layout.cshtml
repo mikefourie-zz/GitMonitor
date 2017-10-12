@@ -1,26 +1,73 @@
+﻿@model GitMonitor.Models.MonitoredPathConfig
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8" />
+<head>
+    <meta charset="utf-8" />
     <title>Git Repository Monitor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/bootswatch/yeti/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/font-awesome.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
-<body><div id="wrapper">
-        <nav class="navbar navbar-fixed-to navbar-inverse">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" asp-controller="Home" asp-action="Index"><i class="fa fa-git"></i> Repository Monitor</a>
-                </div>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="https://github.com/mikefourie/GitMonitor" target="_blank"><i class="fa fa-github"></i></a></li>
-                    </ul>
-                </div>
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index"><i class="fa fa-git"></i> Repository Monitor</a>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Days
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]">1</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]">3</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]">7</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]">14</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]">30</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData[" MPName"]">90</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="180" asp-route-monitoredPathName="@ViewData["MPName"]">180</a>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="365" asp-route-monitoredPathName="@ViewData["MPName"]">365</a>
+                        </div>
+                    </li>
+                    @if (Model?.MonitoredPaths.Count > 1)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Groups
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                @foreach (var mp in @Model.MonitoredPaths)
+                                {
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-monitoredPathName="@mp.Name" asp-route-days="@ViewData["MPDays"]">@mp.Name</a>
+                                }
+                            </div>
+                        </li>
+                    }
+
+                    @if (Model != null)
+                    {
+                        if (Model.ActiveMonitoredPath.AllowFetch)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-outline-success btn-sm floatright">Fetch</a>
+                            </li>
+                        }
+                    }
+                </ul>
             </div>
+            <form class="form-inline d-inline w-100" asp-controller="Home" asp-action="Index" method="post">
+                <span class="label">
+                    <input required id="sha" name="sha" type="text" class="form-control" placeholder="search..." aria-label="Search">
+                    <button class="btn btn-success" type="submit">Search</button>
+                </span>
+            </form>
+            <ul class="navbar-nav navbar-right">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/mikefourie/GitMonitor" target="_blank"><i class="fa fa-github" aria-hidden="true"></i></a>
+                </li>
+            </ul>
         </nav>
         <div id="main" class="container-fluid">
             <div>
@@ -29,8 +76,8 @@
         </div>
     </div>
     <script type="text/javascript" src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="~/lib/popper.js/dist/umd/popper.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-
     <environment names="Development">
         <script type="text/javascript" src="~/js/site.js"></script>
     </environment>
