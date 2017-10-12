@@ -19,10 +19,17 @@ namespace GitMonitor.Export
 
         public static void Main(string[] args)
         {
-            CommandLine.Parser.Default.ParseArguments(args, Arguments);
             Console.WriteLine("--------------------------------------------------");
             Console.WriteLine("Git Monitor Export (c) Mike Fourie - FreeToDev");
             Console.WriteLine("--------------------------------------------------");
+
+            if (args == null || args.Length == 0)
+            {
+                Console.WriteLine("Please provide valid arguments, e.g. --service-endpoint [YOUR URL] --monitoredpathname default --days 180");
+                return;
+            }
+
+            CommandLine.Parser.Default.ParseArguments(args, Arguments);
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Export Started");
             RunAsync().Wait();
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Export Completed");
