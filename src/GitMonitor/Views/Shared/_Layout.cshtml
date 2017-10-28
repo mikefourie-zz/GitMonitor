@@ -11,70 +11,75 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <div id="wrapper">
-        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index"><i class="fa fa-git"></i> Repository Monitor</a>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav">
+<div id="wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index"><i class="fa fa-git"></i> Repository Monitor</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Days
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]">1</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]">3</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]">7</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]">14</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]">30</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData[" MPName"]">90</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="180" asp-route-monitoredPathName="@ViewData["MPName"]">180</a>
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="365" asp-route-monitoredPathName="@ViewData["MPName"]">365</a>
+                    </div>
+                </li>
+                @if (Model?.MonitoredPaths.Count > 1)
+                {
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Days
+                        <a class="nav-link dropdown-toggle active" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Groups
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="1" asp-route-monitoredPathName="@ViewData["MPName"]">1</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="3" asp-route-monitoredPathName="@ViewData["MPName"]">3</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="7" asp-route-monitoredPathName="@ViewData["MPName"]">7</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="14" asp-route-monitoredPathName="@ViewData["MPName"]">14</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="30" asp-route-monitoredPathName="@ViewData["MPName"]">30</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="90" asp-route-monitoredPathName="@ViewData[" MPName"]">90</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="180" asp-route-monitoredPathName="@ViewData["MPName"]">180</a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-days="365" asp-route-monitoredPathName="@ViewData["MPName"]">365</a>
+                            @foreach (var mp in @Model.MonitoredPaths)
+                            {
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-monitoredPathName="@mp.Name" asp-route-days="@ViewData["MPDays"]">@mp.Name</a>
+                            }
                         </div>
                     </li>
-                    @if (Model?.MonitoredPaths.Count > 1)
+                }
+                @if (Model != null)
+                {
+                    if (Model.ActiveMonitoredPath.AllowFetch)
                     {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Groups
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                @foreach (var mp in @Model.MonitoredPaths)
-                                {
-                                    <a class="dropdown-item" asp-controller="Home" asp-action="Index" asp-route-monitoredPathName="@mp.Name" asp-route-days="@ViewData["MPDays"]">@mp.Name</a>
-                                }
-                            </div>
+                        <li class="nav-item active">
+                            <a class="nav-link" asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-outline-success btn-sm floatright">Fetch</a>
                         </li>
                     }
-
-                    @if (Model != null)
-                    {
-                        if (Model.ActiveMonitoredPath.AllowFetch)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Fetch" asp-route-monitoredPathName="@ViewData["MPName"]" asp-route-days="@ViewData["MPDays"]" class="btn btn-outline-success btn-sm floatright">Fetch</a>
-                            </li>
-                        }
-                    }
-                </ul>
-            </div>
-            <form class="form-inline d-inline w-100" asp-controller="Home" asp-action="Index" method="post">
-                <span class="label">
-                    <input required id="sha" name="sha" type="text" class="form-control" placeholder="search..." aria-label="Search">
-                    <button class="btn btn-success" type="submit">Search</button>
-                </span>
-            </form>
-            <ul class="navbar-nav navbar-right">
-                <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/mikefourie/GitMonitor" target="_blank"><i class="fa fa-github" aria-hidden="true"></i></a>
-                </li>
+                }
             </ul>
-        </nav>
-        <div id="main" class="container-fluid">
-            <div>
-                @RenderBody()
-            </div>
+            @if (@ViewData["StartDateTime"] != null && !string.IsNullOrEmpty(@ViewData["StartDateTime"].ToString()))
+            {
+                    <form asp-controller="Home" asp-action="Index" method="post">
+                       <input asp-for="StartDateTime" type="date" value="@ViewData["StartDateTime"]" /><input asp-for="EndDateTime" type="date" value="@ViewData["EndDateTime"]" /> <button type="submit" class="btn btn-outline-light btn-sm"><i class="fa fa-calendar" aria-hidden="true"></i></button>
+                    </form>
+            }
+            else
+            {
+                    <form asp-controller="Home" asp-action="Index" method="post">
+                        <input asp-for="StartDateTime" type="date" value="@DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd")" /><input asp-for="EndDateTime" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" /> <button type="submit" class="btn btn-outline-light btn-sm"><i class="fa fa-calendar" aria-hidden="true"></i></button>
+                    </form>
+            }
+            &nbsp;<input id="sha" name="sha" type="text" class="form-control" style="width:150px;" placeholder="sha search..." aria-label="Search">
+            &nbsp;<button class="btn btn-sm btn-success" onclick="SearchCommit(this)"><i class="fa fa-search" aria-hidden="true"></i></button>            
+        </div>
+    </nav>
+    <div id="main" class="container-fluid">
+        <div>
+            @RenderBody()
         </div>
     </div>
+</div>
     <script type="text/javascript" src="~/lib/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="~/lib/popper.js/dist/umd/popper.min.js"></script>
     <script type="text/javascript" src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>

@@ -5,193 +5,235 @@
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 @model GitMonitor.Models.MonitoredPathConfig
 <div class="container-fluid">
-    <div class="row">
-        <div class="card-body">
-            @if (@ViewData["StartDateTime"] != null && !string.IsNullOrEmpty(@ViewData["StartDateTime"].ToString()))
-            {
-                <div class="card-body">
-                    <form asp-controller="Home" asp-action="Index" method="post">
-                        date range <input asp-for="StartDateTime" type="date" value="@ViewData["StartDateTime"]" /> to <input asp-for="EndDateTime" type="date" value="@ViewData["EndDateTime"]" /> <button type="submit" class="btn btn-outline-primary btn-sm">OK</button>
-                    </form>
-                </div>
-            }
-            else
-            {
-                <div class="card-body">
-                    <form asp-controller="Home" asp-action="Index" method="post">
-                        date range <input asp-for="StartDateTime" type="date" value="@DateTime.Now.AddDays(-2).ToString("yyyy-MM-dd")" /> to <input asp-for="EndDateTime" type="date" value="@DateTime.Now.ToString("yyyy-MM-dd")" /> <button type="submit" class="btn btn-outline-primary btn-sm">OK</button>
-                    </form>
-                </div>
-            }
-        </div>
-        @if (Model.Search != null && Model.Search.Commits != null && Model.Search.Commits.Any())
-        {
-            <div class="col-6">
-                <div class="card bg-light">
-                    <div class="card-header">Commit Found</div>
-                    <div class="card-body">
-                        @foreach (var commit in Model.Search.Commits)
-                        {
-                            <table class="table table-hover table-sm table-responsive">
-                                <tr>
-                                    <td><span class="text-muted"><a href="@commit.RepositoryUrl" target="_blank">@commit.RepositoryName</a></span> - 
-                                        <span class="text-muted">
-                                            @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
-                                            {
-                                                @commit.Sha
-                                            }
-                                            else
-                                            {
-                                                <a href="@commit.CommitUrl" target="_blank">@commit.Sha</a>
-                                            }
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><span class="text-muted">@commit.Author <a href="mailto:@commit.AuthorEmail?subject=@commit.Sha" target="_blank">@commit.AuthorEmail</a></span> <span class="text-muted">@commit.CommitterWhen</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="text-muted">@commit.Message</span></td>
-                                </tr>
-                            </table>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
+    <br/>
     <div class="row">
         <div class="col-12">
             @if (Model != null)
             {
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item"><a class="nav-link active" href="#allcommits" data-toggle="tab"><small>All - @Model.ActiveMonitoredPath.Commits.Count</small></a></li>
-                @foreach (var repo in @Model.ActiveMonitoredPath.Repositories)
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" href="#allcommits" data-toggle="tab"><small>All - @Model.ActiveMonitoredPath.Commits.Count</small></a></li>
+                    @foreach (var repo in @Model.ActiveMonitoredPath.Repositories)
                     {
                         if (repo.CommitCount > 0)
                         {
                             <li class="nav-item"><a class="nav-link" href="#@UrlEncoder.Default.Encode(@repo.FriendlyName)" data-toggle="tab"><small>@repo.FriendlyName - @repo.CommitCount</small></a></li>
                         }
                     }
-            </ul>
-            <div id="myTabContent" class="tab-content">
-                <div class="tab-pane fade show active" role="tabpanel" id="allcommits">
-                    <table class="table table-hover table-sm table-responsive">
-                        <thead class="thead-default">
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane show active" role="tabpanel" id="allcommits">
+                        <table class="table table-hover table-sm table-responsive">
+                            <thead class="thead-default">
                             <tr>
+                                <th></th>
                                 <th>Repository</th>
                                 <th>Date</th>
                                 <th>User</th>
-                                <th>Commit</th>
-                                <th>Info</th>
+                                <th>Sha</th>
                                 <th class="col-md-12">Message</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             @foreach (var commit in @Model.ActiveMonitoredPath.Commits)
-                                {
+                            {
                                 <tr>
+                                    <td>
+                                        <i class="fa fa-external-link" data-sha="@commit.Sha" onclick="GetCommit(this)" aria-hidden="true"></i>
+                                    </td>
                                     <td nowrap>@commit.RepositoryFriendlyName</td>
                                     @if (@commit.CommitterWhen.ToString("dd MMM yyy") == DateTime.Now.ToString("dd MMM yyy"))
-                                        {
+                                    {
                                         <td nowrap>@commit.CommitterWhen.ToString("HH:mm") </td>
-                                        }
-                                        else if (@commit.CommitterWhen > DateTime.UtcNow.AddDays(-7))
-                                        {
+                                    }
+                                    else if (@commit.CommitterWhen > DateTime.UtcNow.AddDays(-7))
+                                    {
                                         <td nowrap>@commit.CommitterWhen.ToString("ddd HH:mm") </td>
-                                        }
-                                        else
-                                        {
+                                    }
+                                    else
+                                    {
                                         <td nowrap>@commit.CommitterWhen.ToString("dd MMM yy") </td>
-                                        }
+                                    }
                                     <td nowrap>@commit.Author</td>
                                     @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
-                                        {
-                                        <td>@commit.Sha.Substring(0, 7) </td>
-                                        }
-                                        else
-                                        {
-                                        <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
-                                        }
-                                    <td><a asp-controller="Home" asp-action="Index" asp-route-sha="@commit.Sha"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></a></td>
+                                    {
+                                        <td>@commit.Sha</td>
+                                    }
+                                    else
+                                    {
+                                        <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha</a></td>
+                                    }
                                     @if (@commit.IsMerge)
-                                        {
+                                    {
                                         <td>
                                             <p class="text-muted">@commit.Message</p>
                                         </td>
-                                        }
-                                        else
-                                        {
+                                    }
+                                    else
+                                    {
                                         <td>@commit.Message</td>
-                                        }
+                                    }
                                 </tr>
-                                }
-                        </tbody>
-                    </table>
-                </div>
-                @foreach (var mp in @Model.ActiveMonitoredPath.Repositories)
-                {
-                    if (mp.CommitCount > 0)
-                    {
-                    <div class="tab-pane fade" role="tabpanel" id="@mp.FriendlyName">
-                        <table class="table table-hover table-sm table-responsive">
-                            <thead class="thead-default">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>User</th>
-                                    <th>Commit</th>
-                                    <th>Info</th>
-                                    <th class="col-md-12">Message</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var commit in @Model.ActiveMonitoredPath.Commits)
-                                        {
-                                            if (@mp.FriendlyName == @commit.RepositoryFriendlyName)
-                                            {
-                                        <tr>
-                                            @if (@commit.CommitterWhen.ToString("dd MMM yyy") == DateTime.Now.ToString("dd MMM yyy"))
-                                                    {
-                                                    <td nowrap>@commit.CommitterWhen.ToString("HH:mm") </td>
-                                                    }
-                                                    else if (@commit.CommitterWhen > DateTime.UtcNow.AddDays(-7))
-                                                    {
-                                                    <td nowrap>@commit.CommitterWhen.ToString("ddd HH:mm") </td>
-                                                    }
-                                                    else
-                                                    {
-                                                    <td nowrap>@commit.CommitterWhen.ToString("dd MMM yy") </td>
-                                                    }
-                                            <td nowrap>@commit.Author</td>
-                                            @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
-                                                    {
-                                                    <td>@commit.Sha.Substring(0, 7)</td>
-                                                    }
-                                                    else
-                                                    {
-                                                    <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha.Substring(0, 7)</a></td>
-                                                    }
-                                            <td><a asp-controller="Home" asp-action="Index" asp-route-sha="@commit.Sha"><i class="fa fa-ellipsis-h" aria-hidden="true"></i></a></td>
-                                            @if (@commit.IsMerge)
-                                                    {
-                                                    <td>
-                                                        <p class="text-muted">@commit.Message</p>
-                                                    </td>
-                                                    }
-                                                    else
-                                                    {
-                                                    <td>@commit.Message</td>
-                                                    }
-                                        </tr>
-                                            }
-                                        }
+                            }
                             </tbody>
                         </table>
                     </div>
+                    @foreach (var mp in @Model.ActiveMonitoredPath.Repositories)
+                    {
+                        if (mp.CommitCount > 0)
+                        {
+                            <div class="tab-pane" role="tabpanel" id="@mp.FriendlyName">
+                                <table class="table table-hover table-sm table-responsive">
+                                    <thead class="thead-default">
+                                    <tr>
+                                        <th></th>
+                                        <th>Repository</th>
+                                        <th>Date</th>
+                                        <th>User</th>
+                                        <th>Sha</th>
+                                        <th class="col-md-12">Message</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var commit in @Model.ActiveMonitoredPath.Commits)
+                                    {
+                                        if (@mp.FriendlyName == @commit.RepositoryFriendlyName)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <i class="fa fa-external-link" data-sha="@commit.Sha" onclick="GetCommit(this)" aria-hidden="true"></i>
+                                                </td>
+                                                <td nowrap>@commit.RepositoryFriendlyName</td>
+                                                @if (@commit.CommitterWhen.ToString("dd MMM yyy") == DateTime.Now.ToString("dd MMM yyy"))
+                                                {
+                                                    <td nowrap>@commit.CommitterWhen.ToString("HH:mm") </td>
+                                                }
+                                                else if (@commit.CommitterWhen > DateTime.UtcNow.AddDays(-7))
+                                                {
+                                                    <td nowrap>@commit.CommitterWhen.ToString("ddd HH:mm") </td>
+                                                }
+                                                else
+                                                {
+                                                    <td nowrap>@commit.CommitterWhen.ToString("dd MMM yy") </td>
+                                                }
+                                                <td nowrap>@commit.Author</td>
+                                                @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
+                                                {
+                                                    <td>@commit.Sha</td>
+                                                }
+                                                else
+                                                {
+                                                    <td><a href="@commit.CommitUrl" target="_blank">@commit.Sha</a></td>
+                                                }
+                                                @if (@commit.IsMerge)
+                                                {
+                                                    <td>
+                                                        <p class="text-muted">@commit.Message</p>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@commit.Message</td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     }
-            </div>
+                </div>
             }
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal" id="commitModal" tabindex="-1" role="dialog" aria-labelledby="commitModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commitModalLabel">Commit Detail</h5>
+                </div>
+                <div class="modal-body">
+                    <p name="repository"></p>
+                    <p name="sha"></p>
+                    <p name="author"></p>
+                    <p name="when"></p>
+                    <p name="message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+@*<table class="table table-hover table-sm table-responsive">
+    <tr>
+        <td><span class="text-muted"><a href="@commit.RepositoryUrl" target="_blank">@commit.RepositoryName</a></span> - 
+            <span class="text-muted">
+                @if (string.IsNullOrWhiteSpace(@commit.CommitUrl))
+                {
+                    @commit.Sha
+                }
+                else
+                {
+                    <a href="@commit.CommitUrl" target="_blank">@commit.Sha</a>
+                }
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td><span class="text-muted">@commit.Author <a href="mailto:@commit.AuthorEmail?subject=@commit.Sha" target="_blank">@commit.AuthorEmail</a></span> <span class="text-muted">@commit.CommitterWhen</span></td>
+    </tr>
+    <tr>
+        <td><span class="text-muted">@commit.Message</span></td>
+    </tr>
+</table>*@
+
+
+@section scripts{
+    <script type="text/javascript">
+        function GetCommit(rowElem) {
+            $('#commitModal').modal('show', rowElem);
+        }
+
+        function SearchCommit() {
+            var sha = document.getElementById('sha').value;
+            if (sha) {
+                $('#commitModal').modal('show', null);
+                document.getElementById('sha').value = "";
+            }
+        }
+
+        $('#commitModal')
+            .on('show.bs.modal',
+                function(e) {
+
+                    var sha = $(e.relatedTarget).data('sha');
+                    if (sha == null) {
+                        sha = document.getElementById('sha').value;
+                    }
+
+                    $.ajax({
+                        url: '@Url.Action("GetCommmit", "Home")',
+                        type: 'GET',
+                        dataType: 'json',
+                        cache: false,
+                        data: { 'sha': sha },
+                        success: function(result) {
+                            $(e.currentTarget).find('p[name="sha"]').text(result.sha);
+                            $(e.currentTarget).find('p[name="repository"]').text(result.commits[0].repositoryName);
+                            $(e.currentTarget).find('p[name="author"]').text(result.commits[0].author);
+                            $(e.currentTarget).find('p[name="when"]').text(result.commits[0].committerWhen);
+                            $(e.currentTarget).find('p[name="message"]').text(result.commits[0].message);
+                            $('#commitModal').modal('show', result);
+                        }
+                    });
+
+                });
+
+    </script>
+}

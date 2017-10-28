@@ -115,7 +115,8 @@ csx
 AppPackages/
 
 node_modules
-src/GitMonitor/wwwroot/lib
+src/GitMonitor/wwwroot/lib/*
+!src/GitMonitor/wwwroot/lib/bootstrap
 
 # Others
 #sql/

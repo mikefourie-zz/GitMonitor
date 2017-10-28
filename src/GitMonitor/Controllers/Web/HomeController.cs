@@ -57,6 +57,20 @@ namespace GitMonitor.Controllers
             }
         }
 
+        public JsonResult GetCommmit(string sha)
+        {
+            GitSearch search = new GitSearch();
+            if (!string.IsNullOrEmpty(sha))
+            {
+                search.Sha = sha;
+                search.Commits = this.localRepository.SearchForCommit(this.localMonitoredPathConfig.Value, "*", sha);
+            }
+
+           // MonitoredPathConfig mpc = this.localMonitoredPathConfig.Value;
+           // mpc.Search = search;
+            return this.Json(search);
+        }
+
         public IActionResult Fetch(string name, int days)
         {
             this.localRepository.FetchAll(this.localMonitoredPathConfig.Value, name);
