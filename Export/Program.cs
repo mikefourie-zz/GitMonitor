@@ -46,7 +46,7 @@ namespace GitMonitor.Export
                 string urltopass;
                 if (string.IsNullOrEmpty(Arguments.RepositoryName))
                 {
-                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}";
+                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}&branchName={Arguments.BranchName}";
                 }
                 else
                 {
@@ -60,12 +60,12 @@ namespace GitMonitor.Export
                     var mi = JsonConvert.DeserializeObject<MonitoredPath>(content);
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Processing {mi.CommitCount} Results");
                     MyExcel.AddWorksheet("CommitData");
-                    MyExcel.WriteHeaderRow("Sha,CommitUrl,Author,AuthorEmail,AuthorWhen,Committer,CommitterEmail,CommitterWhen,IsMerge,Message,RepositoryFriendlyName,RepositoryName,DayOfWeek,WeekOfYear,Month,Year");
+                    MyExcel.WriteHeaderRow("Sha,CommitUrl,Author,AuthorEmail,AuthorWhen,Committer,CommitterEmail,CommitterWhen,CommitterWhenShort,IsMerge,Message,RepositoryFriendlyName,RepositoryName,BranchName,DayOfWeek,WeekOfYear,Month,Year");
 
                     var culture = new CultureInfo("en-US");
                     var calendar = culture.Calendar;
                     int row = 0;
-                    var data = new object[mi.CommitCount, 17];
+                    var data = new object[mi.CommitCount, 18];
                     foreach (var commit in mi.Commits)
                     {
                         int column = 0;
@@ -77,10 +77,12 @@ namespace GitMonitor.Export
                         data[row, column++] = commit.Committer;
                         data[row, column++] = commit.CommitterEmail;
                         data[row, column++] = commit.CommitterWhen.ToString("F");
+                        data[row, column++] = commit.CommitterWhen.ToString("dd MMM yy");
                         data[row, column++] = commit.IsMerge;
                         data[row, column++] = commit.Message;
                         data[row, column++] = commit.RepositoryFriendlyName;
                         data[row, column++] = commit.RepositoryName;
+                        data[row, column++] = Arguments.BranchName;
                         data[row, column++] = commit.CommitterWhen.ToString("ddd");
                         data[row, column++] = calendar.GetWeekOfYear(commit.CommitterWhen, culture.DateTimeFormat.CalendarWeekRule, culture.DateTimeFormat.FirstDayOfWeek);
                         data[row, column++] = commit.CommitterWhen.ToString("MMMM");
