@@ -53,16 +53,30 @@ namespace GitMonitor.Controllers
         }
 
         [Route("{startDateTime:DateTime}")]
-        public JsonResult Get(DateTime startDateTime)
+        public JsonResult Get(DateTime startDateTime, string repoName, string branchName)
         {
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, startDateTime, DateTime.UtcNow);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, repoName, branchName, startDateTime, DateTime.UtcNow);
+            return this.Json(results);
+        }
+
+        [Route("{monitoredPathName}/{startDateTime:DateTime}")]
+        public JsonResult Get(string monitoredPathName, string repoName, string branchName, DateTime startDateTime)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, branchName, startDateTime, DateTime.UtcNow);
             return this.Json(results);
         }
 
         [Route("{startDateTime:DateTime}/{endDateTime:DateTime}")]
-        public JsonResult Get(DateTime startDateTime, DateTime endDateTime)
+        public JsonResult Get(DateTime startDateTime, DateTime endDateTime, string repoName, string branchName)
         {
-            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, string.Empty, string.Empty, startDateTime, endDateTime);
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, string.Empty, repoName, branchName, startDateTime, endDateTime);
+            return this.Json(results);
+        }
+
+        [Route("{monitoredPathName}/{startDateTime:DateTime}/{endDateTime:DateTime}")]
+        public JsonResult Get(string monitoredPathName, DateTime startDateTime, DateTime endDateTime, string repoName, string branchName)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, branchName, startDateTime, endDateTime);
             return this.Json(results);
         }
     }
