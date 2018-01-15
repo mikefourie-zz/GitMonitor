@@ -44,13 +44,41 @@ namespace GitMonitor.Export
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 string urltopass;
-                if (string.IsNullOrEmpty(Arguments.RepositoryName))
+                if (Arguments.StartDate != DateTime.MinValue)
                 {
-                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}&branchName={Arguments.BranchName}";
+                    if (Arguments.EndDate != DateTime.MinValue)
+                    {
+                        if (string.IsNullOrEmpty(Arguments.RepositoryName))
+                        {
+                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?branchName={Arguments.BranchName}";
+                        }
+                        else
+                        {
+                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
+                        }
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(Arguments.RepositoryName))
+                        {
+                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}";
+                        }
+                        else
+                        {
+                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
+                        }
+                    }
                 }
                 else
                 {
-                    urltopass = $"/api/commits/{Arguments.MonitoredPathName}?repoName=" + Arguments.RepositoryName + "&branchName=" + Arguments.BranchName + "&days=" + Arguments.Days;
+                    if (string.IsNullOrEmpty(Arguments.RepositoryName))
+                    {
+                        urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}&branchName={Arguments.BranchName}";
+                    }
+                    else
+                    {
+                        urltopass = $"/api/commits/{Arguments.MonitoredPathName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}&days={Arguments.Days}";
+                    }
                 }
 
                 var response = client.GetAsync(urltopass).Result;
@@ -65,7 +93,8 @@ namespace GitMonitor.Export
                     var culture = new CultureInfo("en-US");
                     var calendar = culture.Calendar;
                     int row = 0;
-                    var data = new object[mi.CommitCount, 18];
+                    int colcount = 18;
+                    var data = new object[mi.CommitCount, colcount];
                     foreach (var commit in mi.Commits)
                     {
                         int column = 0;
@@ -91,7 +120,7 @@ namespace GitMonitor.Export
                     }
 
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Writing Data");
-                    MyExcel.Write(data, mi.CommitCount, 17);
+                    MyExcel.Write(data, mi.CommitCount, colcount);
                     string fileName = Arguments.FileName;
                     if (string.IsNullOrWhiteSpace(fileName))
                     {

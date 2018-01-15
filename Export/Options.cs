@@ -3,6 +3,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Export
 {
+    using System;
     using CommandLine;
 
     public class Options
@@ -12,6 +13,12 @@ namespace GitMonitor.Export
 
         [Option('d', "days", HelpText = "The number of days to retrieve", Required = false, DefaultValue = 10)]
         public int Days { get; set; }
+
+        [Option('t', "startdate", HelpText = "The startdate", Required = false)]
+        public DateTime StartDate { get; set; }
+
+        [Option('e', "enddate", HelpText = "The enddate", Required = false)]
+        public DateTime EndDate { get; set; }
 
         [Option('r', "repositoryname", HelpText = "The name of the repository to retrieve", Required = false)]
         public string RepositoryName { get; set; }
