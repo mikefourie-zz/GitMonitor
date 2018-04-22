@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Options.cs">(c) 2017 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
+// <copyright file="Options.cs">(c) 2018 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Export
 {
@@ -31,5 +31,8 @@ namespace GitMonitor.Export
 
         [Option('m', "monitoredpathname", HelpText = "The name of the monitored path to query", Required = false, DefaultValue = "default")]
         public string MonitoredPathName { get; set; }
+
+        [Option('a', "append", HelpText = "Set to true to append to the file provided", Required = false)]
+        public bool Append { get; set; }
     }
 }

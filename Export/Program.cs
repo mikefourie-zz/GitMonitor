@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Program.cs">(c) 2017 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
+// <copyright file="Program.cs">(c) 2018 Mike Fourie and Contributors (https://github.com/mikefourie/GitMonitor) under MIT License. See https://opensource.org/licenses/MIT</copyright>
 // --------------------------------------------------------------------------------------------------------------------
 namespace GitMonitor.Export
 {
@@ -15,12 +15,12 @@ namespace GitMonitor.Export
     public class Program
     {
         private static readonly Options Arguments = new Options();
-        private static readonly ExcelHelper MyExcel = new ExcelHelper();
+        private static ExcelHelper myExcel;
 
         public static void Main(string[] args)
         {
             Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine("Git Monitor Export (c) Mike Fourie - FreeToDev");
+            Console.WriteLine("Git Monitor Exporter (c) Mike Fourie - FreeToDev");
             Console.WriteLine("--------------------------------------------------");
 
             if (args == null || args.Length == 0)
@@ -30,7 +30,24 @@ namespace GitMonitor.Export
             }
 
             CommandLine.Parser.Default.ParseArguments(args, Arguments);
-            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Export Started");
+            if (Arguments.Append && string.IsNullOrEmpty(Arguments.FileName))
+            {
+                Console.WriteLine("A filename must be provided when append is true.");
+                return;
+            }
+
+            if (!Arguments.Append)
+            {
+                myExcel = new ExcelHelper(string.Empty);
+                myExcel.AddWorksheet("CommitData");
+                myExcel.WriteHeaderRow("Sha,CommitUrl,Author,AuthorEmail,AuthorWhen,Committer,CommitterEmail,CommitterWhen,CommitterWhenShort,IsMerge,Message,RepositoryFriendlyName,RepositoryName,BranchName,DayOfWeek,WeekOfYear,Month,Year");
+            }
+            else
+            {
+                myExcel = new ExcelHelper(Arguments.FileName);
+            }
+
+            Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Export Started for {Arguments.BranchName}");
             RunAsync().Wait();
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Export Completed");
         }
@@ -48,37 +65,16 @@ namespace GitMonitor.Export
                 {
                     if (Arguments.EndDate != DateTime.MinValue)
                     {
-                        if (string.IsNullOrEmpty(Arguments.RepositoryName))
-                        {
-                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?branchName={Arguments.BranchName}";
-                        }
-                        else
-                        {
-                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
-                        }
+                        urltopass = string.IsNullOrEmpty(Arguments.RepositoryName) ? $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?branchName={Arguments.BranchName}" : $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}/{Arguments.EndDate:dd MMM yyyy}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(Arguments.RepositoryName))
-                        {
-                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}";
-                        }
-                        else
-                        {
-                            urltopass = $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
-                        }
+                        urltopass = string.IsNullOrEmpty(Arguments.RepositoryName) ? $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}" : $"/api/commits/{Arguments.MonitoredPathName}/{Arguments.StartDate:dd MMM yyyy}?branchName={Arguments.BranchName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}";
                     }
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(Arguments.RepositoryName))
-                    {
-                        urltopass = $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}&branchName={Arguments.BranchName}";
-                    }
-                    else
-                    {
-                        urltopass = $"/api/commits/{Arguments.MonitoredPathName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}&days={Arguments.Days}";
-                    }
+                    urltopass = string.IsNullOrEmpty(Arguments.RepositoryName) ? $"/api/commits/{Arguments.MonitoredPathName}?days={Arguments.Days}&branchName={Arguments.BranchName}" : $"/api/commits/{Arguments.MonitoredPathName}?repoName={Arguments.RepositoryName}&branchName={Arguments.BranchName}&days={Arguments.Days}";
                 }
 
                 var response = client.GetAsync(urltopass).Result;
@@ -87,8 +83,14 @@ namespace GitMonitor.Export
                 {
                     var mi = JsonConvert.DeserializeObject<MonitoredPath>(content);
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Processing {mi.CommitCount} Results");
-                    MyExcel.AddWorksheet("CommitData");
-                    MyExcel.WriteHeaderRow("Sha,CommitUrl,Author,AuthorEmail,AuthorWhen,Committer,CommitterEmail,CommitterWhen,CommitterWhenShort,IsMerge,Message,RepositoryFriendlyName,RepositoryName,BranchName,DayOfWeek,WeekOfYear,Month,Year");
+                    if (!Arguments.Append)
+                    {
+                        myExcel.WriteHeaderRow("Sha,CommitUrl,Author,AuthorEmail,AuthorWhen,Committer,CommitterEmail,CommitterWhen,CommitterWhenShort,IsMerge,Message,RepositoryFriendlyName,RepositoryName,BranchName,DayOfWeek,WeekOfYear,Month,Year");
+                    }
+                    else
+                    {
+                        myExcel.GetWorksheet("CommitData");
+                    }
 
                     var culture = new CultureInfo("en-US");
                     var calendar = culture.Calendar;
@@ -120,15 +122,23 @@ namespace GitMonitor.Export
                     }
 
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()}  --- Writing Data");
-                    MyExcel.Write(data, mi.CommitCount, colcount);
+                    if (Arguments.Append)
+                    {
+                        myExcel.Append(data, mi.CommitCount, colcount);
+                    }
+                    else
+                    {
+                        myExcel.Write(data, mi.CommitCount, colcount);
+                    }
+
                     string fileName = Arguments.FileName;
                     if (string.IsNullOrWhiteSpace(fileName))
                     {
                         fileName = DateTime.Now.ToString("dd MMM yy hh-mm") + " ChangesetData.xlsx";
                     }
 
-                    MyExcel.SaveWorkBook(Path.Combine(Environment.CurrentDirectory, fileName), false);
-                    MyExcel.Close();
+                    myExcel.SaveWorkBook(Path.Combine(Environment.CurrentDirectory, fileName), Arguments.Append);
+                    myExcel.Close();
                 }
             }
         }
