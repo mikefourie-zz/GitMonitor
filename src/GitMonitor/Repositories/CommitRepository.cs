@@ -78,7 +78,7 @@ namespace GitMonitor.Repositories
 
         public MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, int days)
         {
-            MonitoredPath nmp = new MonitoredPath();
+            MonitoredPath newmonitoredPath = new MonitoredPath();
             try
             {
                 if (string.IsNullOrWhiteSpace(monitoredPathName))
@@ -90,7 +90,7 @@ namespace GitMonitor.Repositories
                 {
                     if (mp.Name.ToLower() == monitoredPathName.ToLower())
                     {
-                        nmp = this.GetMonitoredPath(mpc, mp, repoName, branchName, days);
+                        newmonitoredPath = this.GetMonitoredPath(mpc, mp, repoName, branchName, days);
                     }
                 }              
             }
@@ -100,12 +100,12 @@ namespace GitMonitor.Repositories
                 return null;
             }
 
-            return nmp;
+            return newmonitoredPath;
         }
 
         public MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, DateTime startDateTime, DateTime endDateTime)
         {
-            MonitoredPath nmp = new MonitoredPath();
+            MonitoredPath newmonitoredPath = new MonitoredPath();
             try
             {
                 if (string.IsNullOrWhiteSpace(monitoredPathName))
@@ -117,7 +117,7 @@ namespace GitMonitor.Repositories
                 {
                     if (mp.Name.ToLower() == monitoredPathName.ToLower())
                     {
-                        nmp = this.GetMonitoredPath(mpc, mp, repoName, branchName, startDateTime, endDateTime);
+                        newmonitoredPath = this.GetMonitoredPath(mpc, mp, repoName, branchName, startDateTime, endDateTime);
                     }
                 }
             }
@@ -127,7 +127,7 @@ namespace GitMonitor.Repositories
                 return null;
             }
 
-            return nmp;
+            return newmonitoredPath;
         }
 
         public List<string> SearchBranchesForCommit(MonitoredPathConfig monitoredPathConfig, string repositoryName, string sha, string filter)
@@ -322,6 +322,56 @@ namespace GitMonitor.Repositories
                     }
                 }
             }
+        }
+
+        public MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, string commitId)
+        {
+            MonitoredPath newmonitoredPath = new MonitoredPath();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(monitoredPathName))
+                {
+                    monitoredPathName = "default";
+                }
+
+                foreach (MonitoredPath mp in mpc.MonitoredPaths)
+                {
+                    if (mp.Name.ToLower() == monitoredPathName.ToLower())
+                    {
+                        DirectoryInfo[] directoriesToScan;
+
+                        if (!string.IsNullOrWhiteSpace(repoName))
+                        {
+                            directoriesToScan = new DirectoryInfo(mp.Path).GetDirectories(repoName, SearchOption.TopDirectoryOnly);
+                        }
+                        else
+                        {
+                            if (mp.AllFolders)
+                            {
+                                directoriesToScan = new DirectoryInfo(mp.Path).GetDirectories("*", SearchOption.TopDirectoryOnly);
+                            }
+                            else
+                            {
+                                directoriesToScan = new DirectoryInfo[mp.Repositories.Count];
+                                int i = 0;
+                                foreach (var dir in mp.Repositories)
+                                {
+                                    directoriesToScan[i++] = new DirectoryInfo(Path.Combine(mp.Path, dir.Name));
+                                }
+                            }
+                        }
+
+                        newmonitoredPath = this.GetMonitoredPath(commitId, mp, directoriesToScan, branchName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.locallogger.LogError("Bad - ", ex);
+                return null;
+            }
+
+            return newmonitoredPath;
         }
 
         private IEnumerable<Branch> ListBranchesContaininingCommit(Repository repo, string commitSha, string filter)
@@ -603,6 +653,97 @@ namespace GitMonitor.Repositories
             }
 
             return r;
+        }
+
+        private MonitoredPath GetMonitoredPath(string commitId, MonitoredPath monitoredPath, DirectoryInfo[] directoriesToScan, string branchName)
+        {
+            MonitoredPath newmonitoredPath = new MonitoredPath();
+            List<GitCommit> commits = new List<GitCommit>();
+            foreach (DirectoryInfo dir in directoriesToScan)
+            {
+                try
+                {
+                    GitRepository gitrepo = this.TryGetRepo(monitoredPath, dir.Name);
+                    using (Repository repo = new Repository(dir.FullName))
+                    {
+                        try
+                        {
+                            string branch = repo.Info.IsBare ? branchName : $"origin/{branchName}";
+                            gitrepo.Branch = branch;
+
+                            int commitCount = 0;
+                            Commit com = repo.Lookup<Commit>(commitId);
+
+                            if (com != null)
+                            {
+                                var comFilter = new CommitFilter
+                                {
+                                    IncludeReachableFrom = branch,
+                                    ExcludeReachableFrom = com
+                                };
+
+                                var coms = repo.Commits.QueryBy(comFilter).OrderBy(s => s.Author.When);
+
+                                string repositoryUrl = string.Empty;
+                                if (repo.Network.Remotes?["origin"] != null)
+                                {
+                                    repositoryUrl = repo.Network.Remotes["origin"].Url;
+                                }
+
+                                foreach (Commit cm in coms)
+                                {
+                                    if (!monitoredPath.IncludeMergeCommits)
+                                    {
+                                        // filter out merge commits
+                                        if (com.Parents.Count() > 1)
+                                        {
+                                            continue;
+                                        }
+                                    }
+
+                                    commits.Add(new GitCommit
+                                    {
+                                        Author = cm.Author.Name,
+                                        AuthorEmail = string.IsNullOrWhiteSpace(com.Author.Email) ? string.Empty : cm.Author.Email,
+                                        AuthorWhen = cm.Author.When.UtcDateTime,
+                                        Committer = cm.Committer.Name,
+                                        CommitterEmail = string.IsNullOrWhiteSpace(com.Committer.Email) ? string.Empty : cm.Committer.Email,
+                                        CommitterWhen = cm.Committer.When.UtcDateTime,
+                                        Sha = cm.Sha,
+                                        Message = cm.Message,
+                                        RepositoryFriendlyName = gitrepo.FriendlyName,
+                                        RepositoryName = dir.Name,
+                                        RepositoryUrl = repositoryUrl,
+                                        CommitUrl = string.IsNullOrWhiteSpace(gitrepo.CommitUrl) ? string.Empty : string.Format($"{gitrepo.CommitUrl}{cm.Sha}"),
+                                        IsMerge = com.Parents.Count() > 1
+                                    });
+                                    commitCount++;
+                                }
+
+                                gitrepo.CommitCount = commitCount;
+                                newmonitoredPath.Repositories.Add(gitrepo);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            this.locallogger.LogError("GetMonitoredPath Bad - ", ex);
+                        }
+
+                        newmonitoredPath.Name = monitoredPath.Name;
+                        newmonitoredPath.AllowFetch = monitoredPath.AllowFetch;
+                        newmonitoredPath.AllFolders = monitoredPath.AllFolders;
+                        newmonitoredPath.Path = monitoredPath.Path;
+                        newmonitoredPath.CommitCount = commits.Count;
+                        newmonitoredPath.Commits = commits;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.locallogger.LogError("GetMonitoredPath Bad - ", ex);
+                }
+            }
+
+            return newmonitoredPath;
         }
     }
 }

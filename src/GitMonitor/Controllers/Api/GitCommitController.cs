@@ -79,5 +79,12 @@ namespace GitMonitor.Controllers
             var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, branchName, startDateTime, endDateTime);
             return this.Json(results);
         }
+
+        [Route("{monitoredPathName}/{commitId}")]
+        public JsonResult Get(string monitoredPathName, string commitId, string repoName, string branchName)
+        {
+            var results = this.localRepository.Get(this.localMonitoredPathConfig.Value, monitoredPathName, repoName, branchName, commitId);
+            return this.Json(results);
+        }
     }
 }

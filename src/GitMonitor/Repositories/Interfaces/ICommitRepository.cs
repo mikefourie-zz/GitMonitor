@@ -22,5 +22,7 @@ namespace GitMonitor.Repositories
         MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, int days);
 
         MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, DateTime startDateTime, DateTime endDateTime);
+
+        MonitoredPath Get(MonitoredPathConfig mpc, string monitoredPathName, string repoName, string branchName, string commitId);
     }
 }
