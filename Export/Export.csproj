@@ -16,7 +16,7 @@
     <Compile Include="..\src\GitMonitor\Models\MonitoredPath.cs" Link="Models\MonitoredPath.cs" />
     <PackageReference Include="CommandLineParser" Version="1.9.71" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1000" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <Folder Include="Models\" />
   </ItemGroup>
